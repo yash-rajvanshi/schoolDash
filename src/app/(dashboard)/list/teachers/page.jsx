@@ -6,18 +6,6 @@ import { role, teachersData } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
-type Teacher = {
-  id: number;
-  teacherId: string;
-  name: string;
-  email?: string;
-  photo: string;
-  phone: string;
-  subjects: string[];
-  classes: string[];
-  address: string;
-};
-
 const columns = [
   {
     header: "Info",
@@ -55,7 +43,7 @@ const columns = [
 ];
 
 const TeacherListPage = () => {
-  const renderRow = (item: Teacher) => (
+  const renderRow = (item) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
@@ -86,10 +74,7 @@ const TeacherListPage = () => {
             </button>
           </Link>
           {role === "admin" && (
-            // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaPurple">
-            //   <Image src="/delete.png" alt="" width={16} height={16} />
-            // </button>
-            <FormModal table="teacher" type="delete" id={item.id}/>
+            <FormModal table="teacher" type="delete" id={item.id} />
           )}
         </div>
       </td>
@@ -111,10 +96,7 @@ const TeacherListPage = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              //   <Image src="/plus.png" alt="" width={14} height={14} />
-              // </button>
-              <FormModal table="teacher" type="create"/>
+              <FormModal table="teacher" type="create" />
             )}
           </div>
         </div>

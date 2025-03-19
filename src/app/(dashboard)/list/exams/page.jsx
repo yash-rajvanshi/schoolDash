@@ -5,14 +5,6 @@ import TableSearch from "@/components/TableSearch";
 import { examsData, role } from "@/lib/data";
 import Image from "next/image";
 
-type Exam = {
-  id: number;
-  subject: string;
-  class: string;
-  teacher: string;
-  date: string;
-};
-
 const columns = [
   {
     header: "Subject Name",
@@ -39,7 +31,7 @@ const columns = [
 ];
 
 const ExamListPage = () => {
-  const renderRow = (item: Exam) => (
+  const renderRow = (item) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
@@ -50,7 +42,7 @@ const ExamListPage = () => {
       <td className="hidden md:table-cell">{item.date}</td>
       <td>
         <div className="flex items-center gap-2">
-          {role === "admin" || role === "teacher" && (
+          {(role === "admin" || role === "teacher") && (
             <>
               <FormModal table="exam" type="update" data={item} />
               <FormModal table="exam" type="delete" id={item.id} />
@@ -75,7 +67,7 @@ const ExamListPage = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" || role === "teacher" && <FormModal table="exam" type="create" />}
+            {(role === "admin" || role === "teacher") && <FormModal table="exam" type="create" />}
           </div>
         </div>
       </div>

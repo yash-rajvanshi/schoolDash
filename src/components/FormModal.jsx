@@ -16,36 +16,12 @@ const StudentForm = dynamic(() => import("./forms/StudentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
-const forms: {
-  [key: string]: (type: "create" | "update", data?: any) => JSX.Element;
-} = {
+const forms = {
   teacher: (type, data) => <TeacherForm type={type} data={data} />,
   student: (type, data) => <StudentForm type={type} data={data} />
 };
 
-const FormModal = ({
-  table,
-  type,
-  data,
-  id,
-}: {
-  table:
-    | "teacher"
-    | "student"
-    | "parent"
-    | "subject"
-    | "class"
-    | "lesson"
-    | "exam"
-    | "assignment"
-    | "result"
-    | "attendance"
-    | "event"
-    | "announcement";
-  type: "create" | "update" | "delete";
-  data?: any;
-  id?: number;
-}) => {
+const FormModal = ({ table, type, data, id }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
     type === "create"

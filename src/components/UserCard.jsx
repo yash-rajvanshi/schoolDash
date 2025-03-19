@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-const UserCard = ({ type }: { type: string }) => {
+const UserCard = ({ type }) => {
   return (
     <div className="rounded-2xl odd:bg-lamaPurple even:bg-lamaYellow p-4 flex-1 min-w-[130px]">
       <div className="flex justify-between items-center">
