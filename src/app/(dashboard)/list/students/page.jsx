@@ -1,74 +1,115 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role, studentsData } from "@/lib/data";
+import { role } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
+// ✅ Add fetchStudents inside a function to reuse after creation
+const fetchStudentsFromApi = async (setStudents, setLoading) => {
+  try {
+    const response = await fetch("http://localhost:9000/api/student");
+    const data = await response.json();
+    setStudents(data);
+  } catch (error) {
+    console.error("Error fetching students:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 const columns = [
-  {
-    header: "Info",
-    accessor: "info",
-  },
-  {
-    header: "Student ID",
-    accessor: "studentId",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Grade",
-    accessor: "grade",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Phone",
-    accessor: "phone",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Address",
-    accessor: "address",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  { header: "Info", accessor: "info" },
+  { header: "Student ID", accessor: "studentId", className: "hidden md:table-cell" },
+  { header: "Grade", accessor: "grade", className: "hidden md:table-cell" },
+  { header: "Phone", accessor: "phone", className: "hidden lg:table-cell" },
+  { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
+  { header: "Actions", accessor: "actions" },
 ];
 
-const StudentListPage = () => {
-  const renderRow = (item) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-    >
+const StudentlistPage = () => {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStudentsFromApi(setStudents, setLoading);
+  }, []);
+
+  const handleCreateStudent = async (data) => {
+    try {
+      const formData = new FormData();
+      Object.keys(data).forEach((key) => {
+        formData.append(key, data[key]);
+      });
+
+      const response = await fetch("http://localhost:9000/api/student", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("Student created successfully!");
+        fetchStudentsFromApi(setStudents, setLoading);
+      } else {
+        const errData = await response.json();
+        alert(errData.error || "Failed to create student.");
+      }
+    } catch (error) {
+      console.error("Error creating student:", error);
+      alert("An error occurred while creating the student.");
+    }
+  };
+
+  const handleDeleteStudent = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:9000/api/student/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        alert("Student deleted successfully!");
+        setStudents((prev) => prev.filter((student) => student._id !== id));
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to delete student.");
+      }
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      alert("An error occurred while deleting the student.");
+    }
+  };
+
+  const renderRow = (student) => (
+    <tr key={student._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-ySkyLight">
       <td className="flex items-center gap-4 p-4">
-        <Image
-          src={item.photo}
-          alt=""
-          width={40}
-          height={40}
-          className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
-        />
+        <Image src={student.photo} alt="Student Photo" width={40} height={40} className="md:hidden xl:block w-10 h-10 rounded-full object-cover" />
         <div className="flex flex-col">
-          <h3 className="font-semibold">{item.name}</h3>
-          <p className="text-xs text-gray-500">{item.class}</p>
+          <h3 className="font-semibold">{student.firstName}</h3>
+          <span className="text-gray-500 text-xs">{student.class}</span>
         </div>
       </td>
-      <td className="hidden md:table-cell">{item.studentId}</td>
-      <td className="hidden md:table-cell">{item.grade}</td>
-      <td className="hidden md:table-cell">{item.phone}</td>
-      <td className="hidden md:table-cell">{item.address}</td>
+      <td className="hidden md:table-cell">{student.username}</td>
+      <td className="hidden md:table-cell">{student.grade}</td>
+      <td className="hidden lg:table-cell">{student.phone}</td>
+      <td className="hidden lg:table-cell">{student.address}</td>
       <td>
         <div className="flex items-center gap-2">
-          <Link href={`/list/teachers/${item.id}`}>
+          <Link href={`/list/students/${student._id}`}>
             <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
-              <Image src="/view.png" alt="" width={16} height={16} />
+              <Image src="/view.png" alt="View" width={16} height={16} className="rounded-full" />
             </button>
           </Link>
           {role === "admin" && (
-            <FormModal table="student" type="delete" id={item.id} />
+            <FormModal
+              table="student"
+              type="delete"
+              id={student._id}
+              handleDelete={() => handleDeleteStudent(student._id)}
+            />
           )}
         </div>
       </td>
@@ -77,30 +118,27 @@ const StudentListPage = () => {
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">All Students</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
+            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-yPurple">
+              <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
+            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-yPurple">
+              <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {role === "admin" && (
-              <FormModal table="student" type="create" />
-            )}
+            {role === "admin" && <FormModal table="student" type="create" data={{ onCreate: handleCreateStudent }} />}
           </div>
         </div>
       </div>
-      {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={studentsData} />
-      {/* PAGINATION */}
+
+      {loading ? <p>Loading students...</p> : <Table columns={columns} renderRow={renderRow} data={students} />}
+
       <Pagination />
     </div>
   );
 };
 
-export default StudentListPage;
+export default StudentlistPage;
