@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -12,7 +14,7 @@ async function uploadToCloudinary(file) {
   formData.append("upload_preset", "school");
 
   const response = await fetch(
-    `https://api.cloudinary.com/v1_1/dehtkijhy/image/upload`,
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL,
     {
       method: "POST",
       body: formData,
@@ -28,11 +30,11 @@ const schema = z.object({
     .string()
     .min(3, { message: "Username must be at least 3 characters long!" })
     .max(20, { message: "Username must be at most 20 characters long!" }),
-  studentId: z.coerce.number().int().nonnegative(),
+  // studentId: z.coerce.number().int().nonnegative(),
   email: z.string().email({ message: "Invalid email address!" }),
-  password: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters long!" }),
+  // password: z
+  //   .string()
+  //   .min(8, { message: "Password must be at least 8 characters long!" }),
   firstName: z.string().min(1, { message: "First name is required!" }),
   lastName: z.string().min(1, { message: "Last name is required!" }),
   phone: z.string().min(1, { message: "Phone is required!" }),
@@ -40,7 +42,7 @@ const schema = z.object({
   bloodType: z.string().min(1, { message: "Blood Type is required!" }),
   birthday: z.string().min(1, { message: "Birthday is required!" }),
   sex: z.enum(["male", "female", "OTHER"], { message: "Sex is required!" }),
-  photo: z.string().url({ message: "Image URL is required after upload!" }),
+  photo: z.string().url({ message: "Image URL is required after upload!" }).optional(),
   class: z.string().min(1, { message: "Class is required!" }),
   // grade: z.coerce.number().int().nonnegative().min(1, { message: "Grade is required!" }),
   gradeId: z.string().min(1, { message: "Grade is required!" }),
@@ -49,12 +51,14 @@ const schema = z.object({
 });
 
 const StudentForm = ({ type, data }) => {
+  const [uploading, setUploading] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -83,22 +87,57 @@ const StudentForm = ({ type, data }) => {
     }
   };
 
+
+  // const onSubmit = async (values) => {
+  //   try {
+  //     const payload = {
+  //       ...values,
+  //       studentId: 1,
+  //       grade: values.class || values.grade,
+  //       class: values.classId || values.class, // 👈 override 'class' with 'classId'
+  //     };
+
+  //     console.log("Final Payload: ", payload);
+
+  //     await fetch("http://localhost:9000/api/student", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(payload),
+  //     });
+  //     reset();
+  //   } catch (error) {
+  //     console.error("Error submitting form", error);
+  //   }
+  // };
+
   const onSubmit = async (values) => {
     try {
       const payload = {
         ...values,
+        studentId: data?.studentId || 1,
         grade: values.class || values.grade,
         class: values.classId || values.class, // 👈 override 'class' with 'classId'
+        password: values.email + values.username,
       };
+  
       console.log("Final Payload: ", payload);
-
-      await fetch("http://localhost:9000/api/student", {
-        method: "POST",
+  
+      const url =
+        type === "update"
+          ? `http://localhost:9000/api/student/${data?._id}`
+          : "http://localhost:9000/api/student";
+  
+      await fetch(url, {
+        method: type === "update" ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
+  
+      if (type !== "update") reset();
     } catch (error) {
       console.error("Error submitting form", error);
     }
@@ -125,14 +164,15 @@ const StudentForm = ({ type, data }) => {
           register={register}
           error={errors?.email}
         />
-        <InputField
+        {/* <InputField
           label="Password"
           name="password"
           type="password"
           defaultValue={data?.password}
           register={register}
           error={errors?.password}
-        />
+        /> */}
+
         <div className="flex flex-col gap-2 w-full md:w-1/4">
           <label className="text-xs text-gray-500">Class (1-6)</label>
           <select
@@ -176,14 +216,14 @@ const StudentForm = ({ type, data }) => {
             </p>
           )}
         </div>
-        <InputField
+        {/* <InputField
           label="Student ID"
           name="studentId"
           defaultValue={data?.studentId}
           register={register}
           error={errors?.studentId}
-        />
-        
+        /> */}
+
 
         <input type="hidden" {...register("classId")} />
       </div>
@@ -265,8 +305,10 @@ const StudentForm = ({ type, data }) => {
             onChange={async (e) => {
               const file = e.target.files[0];
               if (file) {
+                setUploading(true); // 👈 prevent form submit
                 const uploadedUrl = await uploadToCloudinary(file);
                 setValue("photo", uploadedUrl);
+                setUploading(false); // 👈 enable submit again
               }
             }}
           />
@@ -279,8 +321,16 @@ const StudentForm = ({ type, data }) => {
         </div>
       </div>
 
-      <button className="bg-blue-400 text-white p-2 rounded-md">
+      {/* <button className="bg-blue-400 text-white p-2 rounded-md">
         {type === "create" ? "Create" : "Update"}
+      </button> */}
+      <button
+        className={`bg-blue-400 text-white p-2 rounded-md ${uploading ? "opacity-60 cursor-not-allowed" : ""
+          }`}
+        type="submit"
+        disabled={uploading}
+      >
+        {uploading ? "Uploading..." : type === "create" ? "Create" : "Update"}
       </button>
     </form>
   );

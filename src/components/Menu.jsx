@@ -1,4 +1,7 @@
-import { role } from "@/lib/data";
+"use client";
+
+import { useAuth } from '@/app/hooks/useAuthHook';
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,7 +12,7 @@ const menuItems = [
       {
         icon: "/home.png",
         label: "Home",
-        href: "/",
+        href: "/admin",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
@@ -66,24 +69,24 @@ const menuItems = [
         href: "/list/results",
         visible: ["admin", "teacher", "student", "parent"],
       },
-      {
-        icon: "/attendance.png",
-        label: "Attendance",
-        href: "/list/attendance",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
+      // {
+      //   icon: "/attendance.png",
+      //   label: "Attendance",
+      //   href: "/list/attendance",
+      //   visible: ["admin", "teacher", "student", "parent"],
+      // },
       {
         icon: "/calendar.png",
         label: "Events",
         href: "/list/events",
         visible: ["admin", "teacher", "student", "parent"],
       },
-      {
-        icon: "/message.png",
-        label: "Messages",
-        href: "/list/messages",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
+      // {
+      //   icon: "/message.png",
+      //   label: "Messages",
+      //   href: "/list/messages",
+      //   visible: ["admin", "teacher", "student", "parent"],
+      // },
       {
         icon: "/announcement.png",
         label: "Announcements",
@@ -97,16 +100,16 @@ const menuItems = [
     items: [
       {
         icon: "/profile.png",
-        label: "Profile",
-        href: "/profile",
+        label: "Sign In",
+        href: "/sign-in",
         visible: ["admin", "teacher", "student", "parent"],
       },
-      {
-        icon: "/setting.png",
-        label: "Settings",
-        href: "/settings",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
+      // {
+      //   icon: "/setting.png",
+      //   label: "Settings",
+      //   href: "/settings",
+      //   visible: ["admin", "teacher", "student", "parent"],
+      // },
       {
         icon: "/logout.png",
         label: "Logout",
@@ -118,6 +121,22 @@ const menuItems = [
 ];
 
 const Menu = () => {
+  // Use the auth hook to get user information
+  const { user } = useAuth();
+  const [userRole, setUserRole] = useState('');
+  
+  // Update userRole when user changes
+  useEffect(() => {
+    if (user?.role) {
+      setUserRole(user.role);
+    }
+  }, [user]);
+
+  // If no role is available yet, show a minimal loading state
+  if (!userRole) {
+    return <div className="mt-4 text-sm">Loading menu...</div>;
+  }
+
   return (
     <div className="mt-4 text-sm">
       {menuItems.map((i) => (
@@ -126,7 +145,8 @@ const Menu = () => {
             {i.title}
           </span>
           {i.items.map((item) => {
-            if (item.visible.includes(role)) {
+            // Only render menu items that are visible to the current user role
+            if (item.visible.includes(userRole)) {
               return (
                 <Link
                   href={item.href}
@@ -138,6 +158,7 @@ const Menu = () => {
                 </Link>
               );
             }
+            return null; // Important to return null for items that don't match
           })}
         </div>
       ))}

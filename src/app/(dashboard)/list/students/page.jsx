@@ -5,16 +5,18 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from '@/app/hooks/useAuthHook'; //for role
+// import fetchWithAuth from "@/app/lib/api";
 
-// ✅ Add fetchStudents inside a function to reuse after creation
-const fetchStudentsFromApi = async (setStudents, setLoading) => {
+const fetchStudentsFromApi = async (page, limit, setStudents, setTotalPages, setLoading) => {
   try {
-    const response = await fetch("http://localhost:9000/api/student");
+    setLoading(true);
+    const response = await fetch(`http://localhost:9000/api/student?page=${page}&limit=${limit}`); //fetchWithAuth can be used
     const data = await response.json();
-    setStudents(data);
+    setStudents(data.students);
+    setTotalPages(data.totalPages);
   } catch (error) {
     console.error("Error fetching students:", error);
   } finally {
@@ -32,12 +34,30 @@ const columns = [
 ];
 
 const StudentlistPage = () => {
-  const [students, setStudents] = useState([]);
+  // Move ALL hooks to the top before any conditional logic
+  const { loading: authLoading, user } = useAuth();
   const [loading, setLoading] = useState(true);
-
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [students, setStudents] = useState([]);
+  const limit = 10;
+  
+  // Move role state here
+  const [role, setRole] = useState(''); //for role
+  
+  // Effects also need to be before any returns
   useEffect(() => {
-    fetchStudentsFromApi(setStudents, setLoading);
-  }, []);
+    if (user?.role) {
+      setRole(user.role); //for role
+    }
+  }, [user]);
+  
+  useEffect(() => {
+    // Only fetch data if user is admin
+    if (role === 'admin' || role === 'teacher') {
+      fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading); //for role
+    }
+  }, [page, role]);
 
   const handleCreateStudent = async (data) => {
     try {
@@ -53,7 +73,7 @@ const StudentlistPage = () => {
 
       if (response.ok) {
         alert("Student created successfully!");
-        fetchStudentsFromApi(setStudents, setLoading);
+        fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading);
       } else {
         const errData = await response.json();
         alert(errData.error || "Failed to create student.");
@@ -92,7 +112,7 @@ const StudentlistPage = () => {
           <span className="text-gray-500 text-xs">{student.class}</span>
         </div>
       </td>
-      <td className="hidden md:table-cell">{student.username}</td>
+      <td className="hidden md:table-cell">{student.studentId}</td>
       <td className="hidden md:table-cell">{student.grade}</td>
       <td className="hidden lg:table-cell">{student.phone}</td>
       <td className="hidden lg:table-cell">{student.address}</td>
@@ -116,6 +136,15 @@ const StudentlistPage = () => {
     </tr>
   );
 
+  // Handle conditional rendering in the return statement instead of early returns
+  if (authLoading) {
+    return <p className="text-center mt-10">Loading...</p>;
+  }
+  
+  if (user?.role !== 'admin' && user?.role !== 'teacher') {
+    return <p className="text-center mt-10">Access denied</p>;
+  }
+
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       <div className="flex items-center justify-between">
@@ -136,7 +165,7 @@ const StudentlistPage = () => {
 
       {loading ? <p>Loading students...</p> : <Table columns={columns} renderRow={renderRow} data={students} />}
 
-      <Pagination />
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
     </div>
   );
 };

@@ -7,14 +7,15 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import Link from "next/link";
-import { role } from "@/lib/data";
+import { useAuth } from '@/app/hooks/useAuthHook';
 
-// ✅ Fetch Teachers
-const fetchTeachersFromApi = async (setTeachers, setLoading) => {
+const fetchTeachersFromApi = async (page, limit, setTeachers, setTotalPages, setLoading) => {
   try {
-    const response = await fetch("http://localhost:9000/api/teacher");
+    setLoading(true);
+    const response = await fetch(`http://localhost:9000/api/teacher?page=${page}&limit=${limit}`);
     const data = await response.json();
-    setTeachers(data);
+    setTeachers(data.teachers);
+    setTotalPages(data.totalPages);
   } catch (error) {
     console.error("Error fetching teachers:", error);
   } finally {
@@ -22,7 +23,7 @@ const fetchTeachersFromApi = async (setTeachers, setLoading) => {
   }
 };
 
-// ✅ Table Columns
+// Table Columns
 const columns = [
   { header: "Info", accessor: "info" },
   { header: "Teacher ID", accessor: "teacherId", className: "hidden md:table-cell" },
@@ -34,43 +35,80 @@ const columns = [
 ];
 
 const TeacherListPage = () => {
+  // Move ALL hooks to the top of the component
+  const { loading: authLoading, user } = useAuth();
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");    // For search functionality
-  const [page, setPage] = useState(1);
-  const [itemsPerPage] = useState(8);
+  const [query, setQuery] = useState("");
+  const [role, setRole] = useState('');
+  const limit = 10;
+
+  // Effects should be after all hooks but before any returns
+  useEffect(() => {
+    if (user?.role) {
+      setRole(user.role);
+    }
+  }, [user]);
 
   useEffect(() => {
-    fetchTeachersFromApi(setTeachers, setLoading);
-  }, []);
+    if (role === 'admin' || role === 'teacher') {
+      fetchTeachersFromApi(page, limit, setTeachers, setTotalPages, setLoading);
+    }
+  }, [page, role]);
 
-  // ✅ Search filter
-  const filteredTeachers = teachers.filter(
-    (teacher) =>
-      teacher.name.toLowerCase().includes(query.toLowerCase()) ||
-      teacher.teacherId.toLowerCase().includes(query.toLowerCase())
-  );
+  const handleCreateTeacher = async (data) => {
+    try {
+      const formData = new FormData();
+      Object.keys(data).forEach((key) => {
+        formData.append(key, data[key]);
+      });
 
-  // ✅ Pagination logic
-  const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
-  const displayedTeachers = filteredTeachers.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
+      const response = await fetch("http://localhost:9000/api/teacher", {
+        method: "POST",
+        body: formData,
+      });
 
-  // ✅ Render each row
+      if (response.ok) {
+        alert("Teacher created successfully!");
+        fetchTeachersFromApi(page, limit, setTeachers, setTotalPages, setLoading);
+      } else {
+        const errData = await response.json();
+        alert(errData.error || "Failed to create Teacher.");
+      }
+    } catch (error) {
+      console.error("Error creating Teacher:", error);
+      alert("An error occurred while creating the Teacher.");
+    }
+  };
+  
+  const handleDeleteTeacher = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:9000/api/teacher/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        alert("Teacher deleted successfully!");
+        setTeachers((prev) => prev.filter((teacher) => teacher._id !== id));
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to delete Teacher.");
+      }
+    } catch (error) {
+      console.error("Error deleting Teacher:", error);
+      alert("An error occurred while deleting the Teacher.");
+    }
+  };
+
   const renderRow = (teacher) => (
     <tr key={teacher._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-ySkyLight">
       <td className="flex items-center gap-4 p-4">
         <Image 
-          src={teacher.photo || "/noavatar.png"} 
-          alt="Teacher Photo" 
-          width={40} 
-          height={40} 
-          className="md:hidden xl:block w-10 h-10 rounded-full object-cover" 
-        />
+          src={teacher.photo || "/noavatar.png"} alt="Teacher Photo" width={40} height={40} className="md:hidden xl:block w-10 h-10 rounded-full object-cover" />
         <div className="flex flex-col">
-          <h3 className="font-semibold">{teacher.name}</h3>
+          <h3 className="font-semibold">{teacher.firstName}</h3>
           <span className="text-gray-500 text-xs">{teacher.subjects.join(", ")}</span>
         </div>
       </td>
@@ -91,7 +129,7 @@ const TeacherListPage = () => {
               table="teacher"
               type="delete"
               id={teacher._id}
-              handleDelete={() => fetchTeachersFromApi(setTeachers, setLoading)}
+              handleDelete={() => handleDeleteTeacher(teacher._id)}
             />
           )}
         </div>
@@ -99,35 +137,15 @@ const TeacherListPage = () => {
     </tr>
   );
 
-  // return (
-  //   <div className="p-4">
-  //     <div className="flex justify-between items-center mb-4">
-  //       <h1 className="text-2xl font-semibold">Teachers</h1>
-  //       <FormModal 
-  //         table="teacher" 
-  //         type="create" 
-  //         refetch={() => fetchTeachersFromApi(setTeachers, setLoading)} 
-  //       />
-  //     </div>
+  // Handle conditional rendering here, after all hooks
+  if (authLoading) {
+    return <p className="text-center mt-10">Loading...</p>;
+  }
+  
+  if (user?.role !== 'admin' && user?.role !== 'teacher') {
+    return <p className="text-center mt-10">Access denied</p>;
+  }
 
-  //     {/* <TableSearch 
-  //       placeholder="Search by name or ID..." 
-  //       setQuery={setQuery} 
-  //     /> */}
-
-  //     <Table 
-  //       columns={columns} 
-  //       data={displayedTeachers} 
-  //       renderRow={renderRow} 
-  //     />
-
-  //     <Pagination 
-  //       page={page} 
-  //       setPage={setPage} 
-  //       totalPages={totalPages} 
-  //     />
-  //   </div>
-  // );
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       <div className="flex items-center justify-between">
@@ -141,14 +159,14 @@ const TeacherListPage = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-yPurple">
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {/* {role === "admin" && <FormModal table="teacher" type="create" data={{ onCreate: handleCreateTeacher }} />} */}
+            {role === "admin" && <FormModal table="teacher" type="create" data={{ onCreate: handleCreateTeacher }} />}
           </div>
         </div>
       </div>
 
       {loading ? <p>Loading teachers...</p> : <Table columns={columns} renderRow={renderRow} data={teachers} />}
 
-      <Pagination />
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
     </div>
   );
 };

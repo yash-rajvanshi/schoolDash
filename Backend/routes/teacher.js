@@ -2,16 +2,69 @@ const express = require("express");
 const router = express.Router();
 const Teacher = require("../models/teacher");
 
-// Create Teacher
+require('dotenv').config();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+// 📌 Create new teacher(s)
 router.post("/", async (req, res) => {
+  const { email, password, ...teacherData } = req.body;
+
   try {
-    const newTeacher = new Teacher(req.body);
+    // 1. Check if user already exists
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ message: "User already exists" });
+
+    // 2. Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 3. Create the user
+    const newUser = await User.create({
+      email,
+      password: hashedPassword,
+      role: "teacher"
+    });
+
+    // 4. Create the teacher
+    const newTeacher = new Teacher({
+      ...teacherData,
+      email, // only if your teacher schema needs email too
+    });
     await newTeacher.save();
-    res.status(201).json(newTeacher);
+
+    // 5. Generate JWT token
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email, role: newUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // 6. Send response
+    res.status(201).json({
+      message: "teacher and user registered successfully!",
+      teacher: newTeacher,
+      token,
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    // Rollback user if teacher creation fails
+    if (email) {
+      await User.deleteOne({ email });
+    }
+    res.status(500).json({ message: "Registration failed", error: error.message });
   }
 });
+
+// // Create Teacher
+// router.post("/", async (req, res) => {
+//   try {
+//     const newTeacher = new Teacher(req.body);
+//     await newTeacher.save();
+//     res.status(201).json(newTeacher);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// });
 
 // Create multiple teachers
 router.post("/multiple", async (req, res) => {
@@ -36,11 +89,24 @@ router.post("/multiple", async (req, res) => {
   }
 });
 
-// Get All Teachers
+// 📌 Get all teachers with pagination
 router.get("/", async (req, res) => {
   try {
-    const teachers = await Teacher.find();
-    res.status(200).json(teachers);
+    const page = parseInt(req.query.page) || 1;      // default to page 1
+    const limit = parseInt(req.query.limit) || 10;   // default to 10 teachers per page
+    const skip = (page - 1) * limit;
+
+    const totalTeachers = await Teacher.countDocuments();           // total teacher count
+    const teachers = await Teacher.find().skip(skip).limit(limit);  // paginated query
+
+    const totalPages = Math.ceil(totalTeachers / limit);
+
+    res.status(200).json({
+      teachers,
+      totalTeachers,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

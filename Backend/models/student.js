@@ -7,7 +7,7 @@ const CounterSchema = new mongoose.Schema({
   seq: { type: Number, default: 0 }
 });
 
-const Counter = mongoose.model('Counter', CounterSchema);
+const Counter = mongoose.model('Counter', CounterSchema) || mongoose.model('Counter', CounterSchema);
 
 const StudentSchema = new mongoose.Schema({
   studentId: { type: Number, unique: true, required: true },

@@ -8,13 +8,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { role } from '@/lib/data';
 
 const SingleTeacherPage = () => {
   const { id } = useParams();
   const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [role, setRole] = useState('');
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.role) {
+      setRole(user.role);
+    }
+  }, []);
+
 
   useEffect(() => {
     const fetchTeacher = async () => {
@@ -50,7 +58,7 @@ const SingleTeacherPage = () => {
             <div className='w-1/3'>
               <Image
                 src={teacher?.photo || "/default-user.png"}
-                alt={teacher?.name || "Teacher Photo"}
+                alt={teacher?.firstName || "Teacher Photo"}
                 width={144}
                 height={144}
                 className='w-36 h-36 rounded-full object-cover'
@@ -58,7 +66,7 @@ const SingleTeacherPage = () => {
             </div>
             <div className='w-2/3 flex flex-col justify-between gap-4'>
               <div className='flex items-center gap-4'>
-                <h1 className='text-xl font-semibold'>{teacher?.name} {teacher?.surname}</h1>
+                <h1 className='text-xl font-semibold'>{teacher?.firstName} {teacher?.lastName}</h1>
                 {role === "admin" && (
                   <FormModal
                     table="teacher"

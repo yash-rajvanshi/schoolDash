@@ -82,7 +82,7 @@ const ParentListPage = () => {
       {/* LIST */}
       <Table columns={columns} renderRow={renderRow} data={parentsData} />
       {/* PAGINATION */}
-      <Pagination />
+      {/* <Pagination /> */}
     </div>
   );
 };

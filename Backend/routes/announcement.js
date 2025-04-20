@@ -2,20 +2,57 @@ const express = require("express");
 const router = express.Router();
 const Announcement = require("../models/announcement");
 
-// 📌 Create new Announcements (single or multiple)
+// 📌 Create a new Announcement
 router.post("/", async (req, res) => {
   try {
-    const data = req.body;
+    const newAnnouncement = new Announcement(req.body);
+    await newAnnouncement.save();
+    res.status(201).json({ message: "Announcement created successfully!", announcement: newAnnouncement });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
-    if (Array.isArray(data)) {
-      // Handle multiple announcements
-      const newAnnouncements = await Announcement.insertMany(data);
-      res.status(201).json({ message: "Announcements created successfully!", announcements: newAnnouncements });
+// 📌 Get all Announcements with pagination
+router.get("/", async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;      // default to page 1
+    const limit = parseInt(req.query.limit) || 10;   // default to 10 Announcements per page
+    const skip = (page - 1) * limit;
+
+    const totalAnnouncements = await Announcement.countDocuments();           // total Announcement count
+    const announcements = await Announcement.find().skip(skip).limit(limit);  // paginated query
+
+    const totalPages = Math.ceil(totalAnnouncements / limit);
+
+    res.status(200).json({
+      announcements,
+      totalAnnouncements,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create multiple Announcement
+router.post("/multiple", async (req, res) => {
+  try {
+    const AnnouncementsData = req.body;
+    let savedAnnouncements = [];
+
+    if (Array.isArray(AnnouncementsData)) {
+      for (const data of AnnouncementsData) {
+        const newAnnouncement = new Announcement(data);
+        await newAnnouncement.save();
+        savedAnnouncements.push(newAnnouncement);
+      }
+      res.status(201).json(savedAnnouncements);
     } else {
-      // Handle single announcement
-      const newAnnouncement = new Announcement(data);
+      const newAnnouncement = new Announcement(AnnouncementsData);
       await newAnnouncement.save();
-      res.status(201).json({ message: "Announcement created successfully!", announcement: newAnnouncement });
+      res.status(201).json(newAnnouncement);
     }
   } catch (error) {
     res.status(400).json({ error: error.message });

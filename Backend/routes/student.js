@@ -1,28 +1,105 @@
+require('dotenv').config();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+
 const express = require("express");
 const router = express.Router();
 const Student = require("../models/student");
 
 // 📌 Create new student(s)
+// router.post("/", async (req, res) => {
+//   try {
+//     if (Array.isArray(req.body)) {
+//       const students = await Student.insertMany(req.body);
+//       res.status(201).json({ message: "Students added successfully!", students });
+//     } else {
+//       const newStudent = new Student(req.body);
+//       await newStudent.save();
+//       res.status(201).json({ message: "Student added successfully!", student: newStudent });
+//     }
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// });
+
+
+
 router.post("/", async (req, res) => {
+  const { email, password, ...studentData } = req.body;
+
   try {
-    if (Array.isArray(req.body)) {
-      const students = await Student.insertMany(req.body);
-      res.status(201).json({ message: "Students added successfully!", students });
-    } else {
-      const newStudent = new Student(req.body);
-      await newStudent.save();
-      res.status(201).json({ message: "Student added successfully!", student: newStudent });
-    }
+    // 1. Check if user already exists
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ message: "User already exists" });
+
+    // 2. Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 3. Create the user
+    const newUser = await User.create({
+      email,
+      password: hashedPassword,
+      role: "student"
+    });
+
+    // 4. Create the student
+    const newStudent = new Student({
+      ...studentData,
+      email, // only if your student schema needs email too
+    });
+    await newStudent.save();
+
+    // 5. Generate JWT token
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email, role: newUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // 6. Send response
+    res.status(201).json({
+      message: "Student and user registered successfully!",
+      student: newStudent,
+      token,
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    // Rollback user if student creation fails
+    if (email) {
+      await User.deleteOne({ email });
+    }
+    res.status(500).json({ message: "Registration failed", error: error.message });
   }
 });
 
-// 📌 Get all students
+// // 📌 Get all students
+// router.get("/", async (req, res) => {
+//   try {
+//     const students = await Student.find();
+//     res.status(200).json(students);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+// 📌 Get all students with pagination
 router.get("/", async (req, res) => {
   try {
-    const students = await Student.find();
-    res.status(200).json(students);
+    const page = parseInt(req.query.page) || 1;      // default to page 1
+    const limit = parseInt(req.query.limit) || 10;   // default to 10 students per page
+    const skip = (page - 1) * limit;
+
+    const totalStudents = await Student.countDocuments();           // total student count
+    const students = await Student.find().skip(skip).limit(limit);  // paginated query
+
+    const totalPages = Math.ceil(totalStudents / limit);
+
+    res.status(200).json({
+      students,
+      totalStudents,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

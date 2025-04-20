@@ -8,13 +8,23 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { role } from '@/lib/data';
+import { useAuth } from '@/app/hooks/useAuthHook';
 
 const SingleStudentPage = () => {
+    useAuth();
     const { id } = useParams();
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [role, setRole] = useState('');
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.role) {
+      setRole(user.role);
+    }
+  }, []);
+
 
     useEffect(() => {
         const fetchStudent = async () => {
@@ -50,7 +60,7 @@ const SingleStudentPage = () => {
                         <div className='w-1/3'>
                             <Image
                                 src={student?.photo || "/default-user.png"}
-                                alt={student?.name || "Student Photo"}
+                                alt={student?.firstName || "Student Photo"}
                                 width={144}
                                 height={144}
                                 className='w-36 h-36 rounded-full object-cover'
@@ -58,7 +68,7 @@ const SingleStudentPage = () => {
                         </div>
                         <div className='w-2/3 flex flex-col justify-between gap-4'>
                             <div className='flex items-center gap-4'>
-                                <h1 className='text-xl font-semibold'>{student?.name} {student?.surname}</h1>
+                                <h1 className='text-xl font-semibold'>{student?.firstName} {student?.lastName}</h1>
                                 {role === "admin" && (
                                     <FormModal
                                         table="student"

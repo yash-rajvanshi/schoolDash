@@ -13,13 +13,49 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 📌 Get all Exams
+// 📌 Get all Exams with pagination
 router.get("/", async (req, res) => {
   try {
-    const exams = await Exam.find().populate("lessonId");
-    res.status(200).json(exams);
+    const page = parseInt(req.query.page) || 1;      // default to page 1
+    const limit = parseInt(req.query.limit) || 10;   // default to 10 Exams per page
+    const skip = (page - 1) * limit;
+
+    const totalExams = await Exam.countDocuments();           // total Exam count
+    const exams = await Exam.find().skip(skip).limit(limit);  // paginated query
+
+    const totalPages = Math.ceil(totalExams / limit);
+
+    res.status(200).json({
+      exams,
+      totalExams,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Create multiple Exam
+router.post("/multiple", async (req, res) => {
+  try {
+    const ExamsData = req.body;
+    let savedExams = [];
+
+    if (Array.isArray(ExamsData)) {
+      for (const data of ExamsData) {
+        const newExam = new Exam(data);
+        await newExam.save();
+        savedExams.push(newExam);
+      }
+      res.status(201).json(savedExams);
+    } else {
+      const newExam = new Exam(ExamsData);
+      await newExam.save();
+      res.status(201).json(newExam);
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

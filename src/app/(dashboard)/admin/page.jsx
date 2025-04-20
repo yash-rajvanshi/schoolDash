@@ -1,3 +1,4 @@
+'use client';
 import Announcements from "@/components/Announcements"
 import AttendanceChart from "@/components/AttendanceChart"
 import CountChart from "@/components/CountChart";
@@ -5,7 +6,14 @@ import EventCalendar from "@/components/EventCalendar";
 import FinanceChart from "@/components/FinanceChart";
 import UserCard from "@/components/UserCard";
 
+import { useAuth } from '@/app/hooks/useAuthHook';
+
+// console.log('typeof useAuth:', typeof useAuth);
 function AdminPage() {
+  const { loading , user } = useAuth();
+  if (user?.role !== 'admin') return <p className="text-center mt-10">Access denied</p>;
+
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
   return (
     <div className="p-4 flex gap-4 flex-col md:flex-row">
       {/* LEFT */}

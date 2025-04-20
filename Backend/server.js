@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -15,13 +16,19 @@ const attendanceRoutes = require("./routes/attendance");
 const eventsRoutes = require("./routes/event");
 const announcementsRoutes = require("./routes/announcement");
 const teacherRoutes = require("./routes/teacher");
+const authRoutes = require('./routes/authRoutes');
+
 
 const app = express();
 app.use(express.json())
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // your frontend port
+    credentials: true
+  }));
 
 dotenv.config();
-
+console.log('JWT_SECRET is:', process.env.JWT_SECRET);
 const PORT = process.env.PORT || 6969;
 
 
@@ -31,6 +38,8 @@ connectDB();
 app.get("/", (req,res)=>{
     res.send("WELCOME TO RABBIT API!");
 })
+
+app.use('/api/auth', authRoutes);
 
 //API Routes 
 // app.use("/api/users",userRoutes);  
@@ -51,3 +60,4 @@ app.use("/api/announcement", announcementsRoutes);
 app.listen(PORT,()=>{
     console.log(`Server is running on http://localhost:${PORT}`);
 })
+

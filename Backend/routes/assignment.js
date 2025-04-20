@@ -14,12 +14,59 @@ router.post("/", async (req, res) => {
 });
 
 // 📌 Get all Assignments
+// router.get("/", async (req, res) => {
+//   try {
+//     const assignments = await Assignment.find().populate("lessonId");
+//     res.status(200).json(assignments);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+// 📌 Get all Assignments with pagination
 router.get("/", async (req, res) => {
   try {
-    const assignments = await Assignment.find().populate("lessonId");
-    res.status(200).json(assignments);
+    const page = parseInt(req.query.page) || 1;      // default to page 1
+    const limit = parseInt(req.query.limit) || 10;   // default to 10 Assignments per page
+    const skip = (page - 1) * limit;
+
+    const totalAssignments = await Assignment.countDocuments();           // total Assignment count
+    const assignments = await Assignment.find().skip(skip).limit(limit);  // paginated query
+
+    const totalPages = Math.ceil(totalAssignments / limit);
+
+    res.status(200).json({
+      assignments,
+      totalAssignments,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+
+// Create multiple assignments
+router.post("/multiple", async (req, res) => {
+  try {
+    const AssignmentsData = req.body;
+    let savedAssignments = [];
+
+    if (Array.isArray(AssignmentsData)) {
+      for (const data of AssignmentsData) {
+        const newAssignment = new Assignment(data);
+        await newAssignment.save();
+        savedAssignments.push(newAssignment);
+      }
+      res.status(201).json(savedAssignments);
+    } else {
+      const newAssignment = new Assignment(AssignmentsData);
+      await newAssignment.save();
+      res.status(201).json(newAssignment);
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

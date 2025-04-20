@@ -6,9 +6,6 @@ import { useState } from "react";
 
 // USE LAZY LOADING
 
-// import TeacherForm from "./forms/TeacherForm";
-// import StudentForm from "./forms/StudentForm";
-
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -16,9 +13,26 @@ const StudentForm = dynamic(() => import("./forms/StudentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
+const AssignmentForm = dynamic(() => import("./forms/AssignmentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+
+const EForm = dynamic(() => import("./forms/EForm.jsx"), {
+  loading: () => <h1>Loading...</h1>,
+});
+
+
+
 const forms = {
-  teacher: (type, data) => <TeacherForm type={type} data={data} />,
-  student: (type, data) => <StudentForm type={type} data={data} />
+  teacher: (type, data) => <TeacherForm type={type} data={data}  />,
+  student: (type, data) => <StudentForm type={type} data={data} />,
+  assignment: (type, data) => <AssignmentForm type={type} data={data} />,
+  exam: (type, data) => <EForm type={type} data={data} />,
+  announcement: (type, data) => <AnnouncementForm type={type} data={data} />,
+
 };
 
 const FormModal = ({ table, type, data, id }) => {
@@ -31,10 +45,35 @@ const FormModal = ({ table, type, data, id }) => {
       : "bg-lamaPurple";
 
   const [open, setOpen] = useState(false);
+  
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    if (!id || !table) return;
+
+    try {
+      const response = await fetch(`http://localhost:9000/api/${table}/${id}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // alert(`${table} deleted successfully!`);
+        // setStudents((prev) => prev.filter((student) => student._id !== id));
+        setOpen(false);
+        // if (onDeleteSuccess) onDeleteSuccess(id); // notify parent
+      } else {
+        alert(result.error || "Failed to delete.");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("An error occurred during deletion.");
+    }
+  };
 
   const Form = () => {
     return type === "delete" && id ? (
-      <form action="" className="p-4 flex flex-col gap-4">
+      <form onSubmit={handleDelete} action="" className="p-4 flex flex-col gap-4">
         <span className="text-center font-medium">
           All data will be lost. Are you sure you want to delete this {table}?
         </span>
