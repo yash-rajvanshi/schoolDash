@@ -2,61 +2,60 @@ const express = require("express");
 const router = express.Router();
 const Class = require("../models/class");
 
-// router.post("/", async (req, res) => {
-//   try {
-//     const newClass = await Class.insertMany(req.body);
-//     // await newClass.save();
-//     res.status(201).json(newClass);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
-
-router.post('/', async (req, res) => {
-    try {
-        // If request body is an array, insertMany; otherwise, create one
-        if (Array.isArray(req.body)) {
-            const classes = await Class.insertMany(req.body);
-            res.status(201).json(classes);
-        } else {
-            const classes = new Class(req.body);
-            await classes.save();
-            res.status(201).json(classes);
-        }
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+// 📌 Create a new Class
+router.post("/", async (req, res) => {
+  try {
+    const newClass = new Class(req.body);
+    await newClass.save();
+    res.status(201).json({ message: "Class created successfully!", class: newClass });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
-// router.get("/", async (req, res) => {
-//   try {
-//     const classes = await Class.find();
-//     res.status(200).json(classes);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
+// 📌 Get all Classes with pagination
 router.get("/", async (req, res) => {
   try {
-    const classes = await Class.find()
-      .populate("gradeId", "level"); // populate only 'level' from Grade
+    const page = parseInt(req.query.page) || 1;      // default to page 1
+    const limit = parseInt(req.query.limit) || 10;   // default to 10 Classes per page
+    const skip = (page - 1) * limit;
 
-    const modifiedClasses = classes.map(cls => ({
-      _id: cls._id,
-      name: cls.name,
-      capacity: cls.capacity,
-      level: cls.gradeId?.level || "N/A",
-      supervisorId: cls.supervisorId,
-      lessons: cls.lessons,
-      students: cls.students,
-      events: cls.events,
-      announcements: cls.announcements
-    }));
+    const totalClasses = await Class.countDocuments();           // total Class count
+    const classes = await Class.find().skip(skip).limit(limit);  // paginated query
 
-    res.json(modifiedClasses);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const totalPages = Math.ceil(totalClasses / limit);
+
+    res.status(200).json({
+      classes,
+      totalClasses,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create multiple Class
+router.post("/multiple", async (req, res) => {
+  try {
+    const ClassesData = req.body;
+    let savedClasses = [];
+
+    if (Array.isArray(ClassesData)) {
+      for (const data of ClassesData) {
+        const newClass = new Class(data);
+        await newClass.save();
+        savedClasses.push(newClass);
+      }
+      res.status(201).json(savedClasses);
+    } else {
+      const newClass = new Class(ClassesData);
+      await newClass.save();
+      res.status(201).json(newClass);
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

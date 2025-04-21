@@ -28,7 +28,7 @@ app.use(cors({
   }));
 
 dotenv.config();
-console.log('JWT_SECRET is:', process.env.JWT_SECRET);
+// console.log('JWT_SECRET is:', process.env.JWT_SECRET);
 const PORT = process.env.PORT || 6969;
 
 
