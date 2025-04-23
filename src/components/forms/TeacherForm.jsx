@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -25,17 +25,12 @@ async function uploadToCloudinary(file) {
   return data.secure_url;
 }
 
-
 const schema = z.object({
   username: z
     .string()
     .min(3, { message: "Username must be at least 3 characters long!" })
     .max(20, { message: "Username must be at most 20 characters long!" }),
-  // studentId: z.coerce.number().int().nonnegative(),
   email: z.string().email({ message: "Invalid email address!" }),
-  // password: z
-  //   .string()
-  //   .min(8, { message: "Password must be at least 8 characters long!" }),
   firstName: z.string().min(1, { message: "First name is required!" }),
   lastName: z.string().min(1, { message: "Last name is required!" }),
   phone: z.string().min(1, { message: "Phone is required!" }),
@@ -44,21 +39,13 @@ const schema = z.object({
   birthday: z.string().min(1, { message: "Birthday is required!" }),
   sex: z.enum(["male", "female", "OTHER"], { message: "Sex is required!" }),
   photo: z.string().url({ message: "Image URL is required after upload!" }),
+  // Both classes and subjects use array of strings
   classes: z
-  .string()
-  .min(1, { message: "Class is required!" })
-  .transform((val) => val.split(",").map((s) => s.trim()))
-  .refine((arr) => arr.length > 0, { message: "At least one class is required!" }),
-  // subjects: z.string().min(1, { message: "Subject is required!" }),
+    .array(z.string())
+    .min(1, { message: "At least one class is required!" }),
   subjects: z
-  .string()
-  .min(1, { message: "Subject is required!" })
-  .transform((val) => val.split(",").map((s) => s.trim()))
-  .refine((arr) => arr.length > 0, { message: "At least one subject is required!" }),
-  // grade: z.coerce.number().int().nonnegative().min(1, { message: "Grade is required!" }),
-  // gradeId: z.string().min(1, { message: "Grade is required!" }),
-  // classId: z.string().min(1, { message: "Combined class ID is required!" }),
-  // results: z.array(z.string()).optional(),
+    .array(z.string())
+    .min(1, { message: "At least one subject is required!" }),
 });
 
 /**
@@ -66,6 +53,32 @@ const schema = z.object({
  */
 const TeacherForm = ({ type, data }) => {
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [classes, setClasses] = useState([]); // Available classes from DB
+  const [subjects, setSubjects] = useState([]); // Available subjects from DB
+  const [classDropdownOpen, setClassDropdownOpen] = useState(false);
+  const [subjectDropdownOpen, setSubjectDropdownOpen] = useState(false);
+  const [initialSubjects, setInitialSubjects] = useState([]); // Track initial subjects for updates
+  
+  const classDropdownRef = useRef(null);
+  const subjectDropdownRef = useRef(null);
+  
+  // This is the key part for debugging - log the incoming data
+  useEffect(() => {
+    if (data) {
+      console.log("Incoming teacher data:", data);
+      // Log the specific class data format
+      console.log("Class data format:", data.classes);
+      
+      // Store initial subjects for later comparison during updates
+      const subjectIds = Array.isArray(data?.subjects) 
+        ? data.subjects.map(subj => typeof subj === 'object' && subj._id ? subj._id : subj)
+        : data?.subjects?.split(',').map(s => s.trim()) || [];
+      
+      setInitialSubjects(subjectIds);
+    }
+  }, [data]);
+  
   const {
     register,
     handleSubmit,
@@ -73,134 +86,276 @@ const TeacherForm = ({ type, data }) => {
     setValue,
     watch,
     reset,
+    control,
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       ...data,
-      classes: data?.classes || [],
-      subjects: data?.subjects || [],
+      // Fix: Check if classes are objects (with _id property) or just strings
+      classes: data?.classes?.map(cls => typeof cls === 'object' && cls._id ? cls._id : cls) || [],
+      // Convert subjects from array or comma-separated string to array
+      subjects: Array.isArray(data?.subjects) 
+        ? (data.subjects.map(subj => typeof subj === 'object' && subj._id ? subj._id : subj))
+        : data?.subjects?.split(',').map(s => s.trim()) || [],
     },
   });
 
-  // const onSubmit = async (values) => {
-  //   try {
-  //     const payload = {
-  //       ...values,
-  //       teacherId: 1,
-  //     };
-  //     console.log("Final Payload: ", payload);
+  // Watch values to display selected items
+  const selectedClasses = watch("classes") || [];
+  const selectedSubjects = watch("subjects") || [];
 
-  //     await fetch("http://localhost:9000/api/teacher", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(payload),
-  //     });
-  //     reset();
-  //   } catch (error) {
-  //     console.error("Error submitting form", error);
-  //   }
-  // };
+  // Fetch classes and subjects on mount
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const res = await fetch("http://localhost:9000/api/class");
+        const json = await res.json();
+        console.log("Fetched Classes:", json);
+        setClasses(json.classes);
+      } catch (error) {
+        console.error("Error fetching classes", error);
+      }
+    };
+    
+    const fetchSubjects = async () => {
+      try {
+        const res = await fetch("http://localhost:9000/api/subject");
+        const json = await res.json();
+        console.log("Fetched Subjects:", json);
+        setSubjects(json.subjects || []); // Ensure we have an array even if API returns differently
+      } catch (error) {
+        console.error("Error fetching subjects", error);
+      }
+    };
+    
+    fetchClasses();
+    fetchSubjects();
+  }, []);
+
+  // Handle clicks outside the dropdowns
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (classDropdownRef.current && !classDropdownRef.current.contains(event.target)) {
+        setClassDropdownOpen(false);
+      }
+      if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target)) {
+        setSubjectDropdownOpen(false);
+      }
+    }
+    
+    // Add event listener when either dropdown is open
+    if (classDropdownOpen || subjectDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    
+    // Clean up the event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [classDropdownOpen, subjectDropdownOpen]);
+
+  // Toggle a class selection
+  const toggleClass = (classId) => {
+    if (selectedClasses.includes(classId)) {
+      // Remove class if already selected
+      setValue(
+        "classes",
+        selectedClasses.filter((id) => id !== classId)
+      );
+    } else {
+      // Add class if not selected
+      setValue("classes", [...selectedClasses, classId]);
+    }
+  };
+
+  // Toggle a subject selection
+  const toggleSubject = (subjectId) => {
+    if (selectedSubjects.includes(subjectId)) {
+      // Remove subject if already selected
+      setValue(
+        "subjects",
+        selectedSubjects.filter((id) => id !== subjectId)
+      );
+    } else {
+      // Add subject if not selected
+      setValue("subjects", [...selectedSubjects, subjectId]);
+    }
+  };
+
+  // Fixed getClassName function - handle different class ID formats
+  const getClassName = (classId) => {
+    // First try to find by direct ID match
+    let cls = classes.find(c => c._id === classId);
+    
+    // If not found and classId is an object with _id property, try that
+    if (!cls && typeof classId === 'object' && classId._id) {
+      cls = classes.find(c => c._id === classId._id);
+    }
+    
+    // If still not found, try string comparison (in case IDs are stored differently)
+    if (!cls && classes.length > 0) {
+      cls = classes.find(c => String(c._id) === String(classId));
+    }
+    
+    // Log for debugging
+    if (!cls) {
+      console.log(`Class not found for ID: ${classId}`);
+      console.log("Available classes:", classes);
+    }
+    
+    return cls ? cls.name : 'Unknown';
+  };
+
+  // Similarly fix getSubjectName function
+  const getSubjectName = (subjectId) => {
+    let subject = subjects.find(s => s._id === subjectId);
+    
+    if (!subject && typeof subjectId === 'object' && subjectId._id) {
+      subject = subjects.find(s => s._id === subjectId._id);
+    }
+    
+    if (!subject && subjects.length > 0) {
+      subject = subjects.find(s => String(s._id) === String(subjectId));
+    }
+    
+    return subject ? subject.name : 'Unknown';
+  };
+
+  // Remove a class selection
+  const removeClass = (classId) => {
+    setValue(
+      "classes",
+      selectedClasses.filter((id) => id !== classId)
+    );
+  };
+
+  // Remove a subject selection
+  const removeSubject = (subjectId) => {
+    setValue(
+      "subjects",
+      selectedSubjects.filter((id) => id !== subjectId)
+    );
+  };
+
+  // New function to update subjects with teacher ID
+  const updateSubjectsWithTeacher = async (teacherId, selectedSubjectIds, previousSubjectIds = []) => {
+    try {
+      // Determine which subjects need teacher added (new subjects)
+      const subjectsToAdd = selectedSubjectIds.filter(id => !previousSubjectIds.includes(id));
+      
+      // Determine which subjects need teacher removed (removed subjects)
+      const subjectsToRemove = previousSubjectIds.filter(id => !selectedSubjectIds.includes(id));
+      
+      console.log("Updating subjects for teacher:", teacherId);
+      console.log("Adding teacher to subjects:", subjectsToAdd);
+      console.log("Removing teacher from subjects:", subjectsToRemove);
+      
+      // Process subjects to add teacher to
+      for (const subjectId of subjectsToAdd) {
+        // First get the current subject data
+        const getResponse = await fetch(`http://localhost:9000/api/subject/${subjectId}`);
+        const subjectData = await getResponse.json();
+        
+        // Prepare updated teachers array - ensure we don't add duplicates
+        let teachers = Array.isArray(subjectData.teachers) ? [...subjectData.teachers] : [];
+        if (!teachers.includes(teacherId) && !teachers.some(t => t._id === teacherId)) {
+          teachers.push(teacherId);
+        }
+        
+        // Update the subject
+        await fetch(`http://localhost:9000/api/subject/${subjectId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...subjectData, teachers }),
+        });
+      }
+      
+      // Process subjects to remove teacher from
+      for (const subjectId of subjectsToRemove) {
+        // First get the current subject data
+        const getResponse = await fetch(`http://localhost:9000/api/subject/${subjectId}`);
+        const subjectData = await getResponse.json();
+        
+        // Prepare updated teachers array - filter out this teacher
+        let teachers = Array.isArray(subjectData.teachers) 
+          ? subjectData.teachers.filter(t => 
+              t !== teacherId && 
+              (typeof t === 'object' ? t._id !== teacherId : true)
+            )
+          : [];
+        
+        // Update the subject
+        await fetch(`http://localhost:9000/api/subject/${subjectId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...subjectData, teachers }),
+        });
+      }
+      
+      console.log("Subject updates completed successfully");
+    } catch (error) {
+      console.error("Error updating subjects with teacher:", error);
+      throw error; // Re-throw so the main function can handle it
+    }
+  };
 
   const onSubmit = async (values) => {
     try {
+      setSubmitting(true);
+      
       const payload = {
         ...values,
         teacherId: data?.teacherId || 1,
         password: values.email + values.username,
       };
-  
+
       console.log("Final Payload: ", payload);
-  
+
       const url =
         type === "update"
           ? `http://localhost:9000/api/teacher/${data?._id}`
           : "http://localhost:9000/api/teacher";
-  
-      await fetch(url, {
+
+      const response = await fetch(url, {
         method: type === "update" ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-  
+      
+      const teacherData = await response.json();
+      const teacherId = type === "update" ? data?._id : teacherData._id;
+      
+      console.log("Teacher saved successfully:", teacherData);
+      
+      // Now update the subjects with this teacher ID
+      await updateSubjectsWithTeacher(
+        teacherId, 
+        values.subjects, 
+        type === "update" ? initialSubjects : []
+      );
+
       if (type !== "update") reset();
+      
+      alert("Teacher " + (type === "update" ? "updated" : "created") + " successfully!");
     } catch (error) {
       console.error("Error submitting form", error);
+      alert("There was an error " + (type === "update" ? "updating" : "creating") + " the teacher. Please check the console for details.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    // <form onSubmit={handleSubmit(onSubmit)}>
-    //   <InputField
-    //     label="Username"
-    //     {...register("username")}
-    //     error={errors.username?.message}
-    //   />
-    //   <InputField
-    //     label="Email"
-    //     {...register("email")}
-    //     error={errors.email?.message}
-    //   />
-    //   <InputField
-    //     label="Password"
-    //     type="password"
-    //     {...register("password")}
-    //     error={errors.password?.message}
-    //   />
-    //   <InputField
-    //     label="First Name"
-    //     {...register("firstName")}
-    //     error={errors.firstName?.message}
-    //   />
-    //   <InputField
-    //     label="Last Name"
-    //     {...register("lastName")}
-    //     error={errors.lastName?.message}
-    //   />
-    //   <InputField
-    //     label="Phone"
-    //     {...register("phone")}
-    //     error={errors.phone?.message}
-    //   />
-    //   <InputField
-    //     label="Address"
-    //     {...register("address")}
-    //     error={errors.address?.message}
-    //   />
-    //   <InputField
-    //     label="Blood Type"
-    //     {...register("bloodType")}
-    //     error={errors.bloodType?.message}
-    //   />
-    //   <InputField
-    //     label="Birthday"
-    //     type="date"
-    //     {...register("birthday")}
-    //     error={errors.birthday?.message}
-    //   />
-    //   <select {...register("sex")}>
-    //     <option value="">Select Gender</option>
-    //     <option value="male">Male</option>
-    //     <option value="female">Female</option>
-    //   </select>
-    //   {errors.sex && <p>{errors.sex.message}</p>}
-
-    //   <InputField
-    //     label="Upload Image"
-    //     type="file"
-    //     {...register("img")}
-    //     error={errors.img?.message}
-    //   />
-
-    //   <button type="submit" className="mt-4 bg-blue-500 text-white p-2 rounded">
-    //     {type === "create" ? "Create" : "Update"} Teacher
-    //   </button>
-    // </form>
     <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
-      <h1 className="text-xl font-semibold">Create a new Teacher</h1>
+      <h1 className="text-xl font-semibold">
+        {type === "update" ? "Update Teacher" : "Create a new Teacher"}
+      </h1>
       <span className="text-xs text-gray-400 font-medium">
         Authentication Information
       </span>
@@ -219,69 +374,6 @@ const TeacherForm = ({ type, data }) => {
           register={register}
           error={errors?.email}
         />
-        {/* <InputField
-          label="Password"
-          name="password"
-          type="password"
-          defaultValue={data?.password}
-          register={register}
-          error={errors?.password}
-        /> */}
-
-
-        {/* <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Class (1-6)</label>
-          <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("class")}
-            onChange={handleClassChange}
-            defaultValue={data?.class || ""}
-          >
-            <option value="">Select Class</option>
-            {[1, 2, 3, 4, 5, 6].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
-            ))}
-          </select>
-          {errors.class?.message && (
-            <p className="text-xs text-red-400">
-              {errors.class.message.toString()}
-            </p>
-          )}
-        </div> */}
-
-        {/* <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Grade (A-D)</label>
-          <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("gradeId")}
-            onChange={handleGradeChange}
-            defaultValue={data?.gradeId || ""}
-          >
-            <option value="">Select Grade</option>
-            {["A", "B", "C", "D"].map((grade) => (
-              <option key={grade} value={grade}>
-                {grade}
-              </option>
-            ))}
-          </select>
-          {errors.gradeId?.message && (
-            <p className="text-xs text-red-400">
-              {errors.gradeId.message.toString()}
-            </p>
-          )}
-        </div> */}
-        {/* <InputField
-          label="Student ID"
-          name="studentId"
-          defaultValue={data?.studentId}
-          register={register}
-          error={errors?.studentId}
-        /> */}
-
-
-        <input type="hidden" {...register("classId")} />
       </div>
 
       <span className="text-xs text-gray-400 font-medium">
@@ -302,20 +394,153 @@ const TeacherForm = ({ type, data }) => {
           register={register}
           error={errors.lastName}
         />
-        <InputField
-  label="Classes"
-  name="classes"
-  defaultValue={data?.classes?.join(", ")} // Optional: makes sure it's a string in edit mode
-  register={register}
-  error={errors?.classes}
-/>
-        <InputField
-  label="Subjects"
-  name="subjects"
-  defaultValue={data?.subjects?.join(", ")} // Optional: makes sure it's a string in edit mode
-  register={register}
-  error={errors?.subjects}
-/>
+        
+        {/* Multi-select dropdown for classes */}
+        <div className="flex flex-col w-[48%] relative" ref={classDropdownRef}>
+          <label className="font-medium text-sm text-gray-700 mb-1">
+            Classes
+          </label>
+          <div 
+            className="border border-gray-300 rounded-md p-2 min-h-10 cursor-pointer flex flex-wrap gap-1"
+            onClick={() => setClassDropdownOpen(!classDropdownOpen)}
+          >
+            {selectedClasses.length > 0 ? (
+              selectedClasses.map((classId) => (
+                <div 
+                  key={classId} 
+                  className="bg-blue-100 text-blue-800 rounded px-2 py-1 text-sm flex items-center"
+                >
+                  {getClassName(classId)}
+                  <button
+                    type="button"
+                    className="ml-1 text-blue-600 hover:text-blue-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeClass(classId);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))
+            ) : (
+              <span className="text-gray-500">Select classes</span>
+            )}
+          </div>
+          
+          {classDropdownOpen && (
+            <div className="absolute z-10 w-full mt-12 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              {classes.map((cls) => (
+                <div
+                  key={cls._id}
+                  className={`p-2 hover:bg-gray-100 cursor-pointer ${
+                    selectedClasses.includes(cls._id) ? "bg-blue-50" : ""
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleClass(cls._id);
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedClasses.includes(cls._id)}
+                    onChange={() => {}}
+                    className="mr-2"
+                  />
+                  {cls.name}
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Hidden input for form validation */}
+          <input 
+            type="hidden" 
+            name="classes" 
+            value={selectedClasses} 
+            {...register("classes")} 
+          />
+          
+          {errors?.classes && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors.classes.message}
+            </p>
+          )}
+        </div>
+
+        {/* Multi-select dropdown for subjects */}
+        <div className="flex flex-col w-[48%] relative" ref={subjectDropdownRef}>
+          <label className="font-medium text-sm text-gray-700 mb-1">
+            Subjects
+          </label>
+          <div 
+            className="border border-gray-300 rounded-md p-2 min-h-10 cursor-pointer flex flex-wrap gap-1"
+            onClick={() => setSubjectDropdownOpen(!subjectDropdownOpen)}
+          >
+            {selectedSubjects.length > 0 ? (
+              selectedSubjects.map((subjectId) => (
+                <div 
+                  key={subjectId} 
+                  className="bg-green-100 text-green-800 rounded px-2 py-1 text-sm flex items-center"
+                >
+                  {getSubjectName(subjectId)}
+                  <button
+                    type="button"
+                    className="ml-1 text-green-600 hover:text-green-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeSubject(subjectId);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))
+            ) : (
+              <span className="text-gray-500">Select subjects</span>
+            )}
+          </div>
+          
+          {subjectDropdownOpen && (
+            <div className="absolute z-10 w-full mt-12 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              {subjects.map((subject) => (
+                <div
+                  key={subject._id}
+                  className={`p-2 hover:bg-gray-100 cursor-pointer ${
+                    selectedSubjects.includes(subject._id) ? "bg-green-50" : ""
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSubject(subject._id);
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedSubjects.includes(subject._id)}
+                    onChange={() => {}}
+                    className="mr-2"
+                  />
+                  {subject.name}
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Hidden input for form validation */}
+          <input 
+            type="hidden" 
+            name="subjects" 
+            value={selectedSubjects} 
+            {...register("subjects")} 
+          />
+          
+          {errors?.subjects && (
+            <p className="text-red-500 text-xs mt-1">
+              {errors.subjects.message}
+            </p>
+          )}
+        </div>
+
         <InputField
           label="Phone"
           name="phone"
@@ -375,10 +600,10 @@ const TeacherForm = ({ type, data }) => {
             onChange={async (e) => {
               const file = e.target.files[0];
               if (file) {
-                setUploading(true); // 👈 prevent form submit
+                setUploading(true);
                 const uploadedUrl = await uploadToCloudinary(file);
                 setValue("photo", uploadedUrl);
-                setUploading(false); // 👈 enable submit again
+                setUploading(false);
               }
             }}
           />
@@ -391,16 +616,16 @@ const TeacherForm = ({ type, data }) => {
         </div>
       </div>
 
-      {/* <button className="bg-blue-400 text-white p-2 rounded-md">
-        {type === "create" ? "Create" : "Update"}
-      </button> */}
       <button
-        className={`bg-blue-400 text-white p-2 rounded-md ${uploading ? "opacity-60 cursor-not-allowed" : ""
-          }`}
+        className={`bg-blue-400 text-white p-2 rounded-md ${
+          uploading || submitting ? "opacity-60 cursor-not-allowed" : ""
+        }`}
         type="submit"
-        disabled={uploading}
+        disabled={uploading || submitting}
       >
-        {uploading ? "Uploading..." : type === "create" ? "Create" : "Update"}
+        {uploading ? "Uploading..." : 
+         submitting ? "Saving..." :
+         type === "create" ? "Create" : "Update"}
       </button>
     </form>
   );

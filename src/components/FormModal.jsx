@@ -28,6 +28,10 @@ const ClassForm = dynamic(() => import("./forms/ClassForm.jsx"), {
   loading: () => <h1>Loading...</h1>,
 });
 
+const SubjectForm = dynamic(() => import("./forms/SubjectForm.jsx"), {
+  loading: () => <h1>Loading...</h1>,
+});
+
 
 
 const forms = {
@@ -37,6 +41,7 @@ const forms = {
   exam: (type, data) => <EForm type={type} data={data} />,
   announcement: (type, data) => <AnnouncementForm type={type} data={data} />,
   class: (type, data) => <ClassForm type={type} data={data} />,
+  subject: (type, data) => <SubjectForm type={type} data={data} />,
 
 };
 

@@ -1,23 +1,62 @@
 const express = require("express");
 const router = express.Router();
 const Subject = require("../models/subject");
+const Teacher = require("../models/teacher")
 
+// 📌 Create a new Subject
 router.post("/", async (req, res) => {
   try {
     const newSubject = new Subject(req.body);
     await newSubject.save();
-    res.status(201).json(newSubject);
+    res.status(201).json({ message: "Subject created successfully!", subject: newSubject });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
+// 📌 Get all Subjects with pagination
 router.get("/", async (req, res) => {
   try {
-    const subjects = await Subject.find();
-    res.status(200).json(subjects);
+    const page = parseInt(req.query.page) || 1;      // default to page 1
+    const limit = parseInt(req.query.limit) || 10;   // default to 10 Subjects per page
+    const skip = (page - 1) * limit;
+
+    const totalSubjects = await Subject.countDocuments();           // total Subject count
+    const subjects = await Subject.find().skip(skip).limit(limit);  // paginated query
+
+    const totalPages = Math.ceil(totalSubjects / limit);
+
+    res.status(200).json({
+      subjects,
+      totalSubjects,
+      totalPages,
+      currentPage: page,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Create multiple Subject
+router.post("/multiple", async (req, res) => {
+  try {
+    const SubjectsData = req.body;
+    let savedSubjects = [];
+
+    if (Array.isArray(SubjectsData)) {
+      for (const data of SubjectsData) {
+        const newSubject = new Subject(data);
+        await newSubject.save();
+        savedSubjects.push(newSubject);
+      }
+      res.status(201).json(savedSubjects);
+    } else {
+      const newSubject = new Subject(SubjectsData);
+      await newSubject.save();
+      res.status(201).json(newSubject);
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -38,6 +77,7 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const updatedSubject = await Subject.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const teacherUpdatedsub = await Teacher.find
 
     if (!updatedSubject) return res.status(404).json({ error: "Subject not found" });
 
