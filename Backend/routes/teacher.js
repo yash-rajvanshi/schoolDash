@@ -6,9 +6,9 @@ require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-// 📌 Create new teacher(s)
+
 router.post("/", async (req, res) => {
-  const { email, password, ...teacherData } = req.body;
+  const { email, password, firstName, lastName, ...teacherData } = req.body;
 
   try {
     // 1. Check if user already exists
@@ -19,23 +19,27 @@ router.post("/", async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 3. Create the user
+    // 3. Create the user (now with names)
     const newUser = await User.create({
       email,
       password: hashedPassword,
-      role: "teacher"
+      role: "teacher",
+      firstName,
+      lastName,
     });
 
     // 4. Create the teacher
     const newTeacher = new Teacher({
       ...teacherData,
-      email, // only if your teacher schema needs email too
+      email,
+      firstName,
+      lastName,
     });
     await newTeacher.save();
 
     // 5. Generate JWT token
     const token = jwt.sign(
-      { id: newUser._id, email: newUser.email, role: newUser.role },
+      { id: newUser._id, email: newUser.email, role: newUser.role, firstName: newUser.firstName,lastName: newUser.lastName  },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -45,9 +49,14 @@ router.post("/", async (req, res) => {
       message: "teacher and user registered successfully!",
       teacher: newTeacher,
       token,
+      user: {
+        email: newUser.email,
+        role: newUser.role,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+      }
     });
   } catch (error) {
-    // Rollback user if teacher creation fails
     if (email) {
       await User.deleteOne({ email });
     }

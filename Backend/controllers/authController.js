@@ -40,7 +40,18 @@ const login = async (req, res) => {
       { expiresIn: '2h' }
     );
 
-    res.json({ token, user: { email: user.email, role: user.role } });
+    // res.json({ token, user: { email: user.email, role: user.role } });
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,    
+      },
+      token,
+    });
   } catch (err) {
     console.log("JWT_SECRET:", process.env.JWT_SECRET);
     res.status(500).json({ message: 'Login error', error: err.message });

@@ -20,6 +20,8 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  firstName: { type: String, required: true }, // 👈 add this
+  lastName: { type: String, required: true },  // 👈 add this
   password: {
     type: String,
     required: true

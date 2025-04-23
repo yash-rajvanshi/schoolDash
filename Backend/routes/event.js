@@ -42,8 +42,23 @@ router.post("/", async (req, res) => {
 // 📌 Get all Events
 router.get("/", async (req, res) => {
   try {
-    const events = await Event.find().populate("classId");
-    res.status(200).json(events);
+    const page = parseInt(req.query.page) || 1;      // default to page 1
+    const limit = parseInt(req.query.limit) || 10;   // default to 10 Classes per page
+    const skip = (page - 1) * limit;
+    const totalEvents = await Event.countDocuments();           // total Class count
+    // paginated query thi yahan
+
+    const totalPages = Math.ceil(totalEvents / limit);
+    const events = await Event.find()
+      .skip(skip)
+      .limit(limit)
+      .populate("classId");
+      res.status(200).json({
+        events,
+        totalEvents,
+        totalPages,
+        currentPage: page,
+      });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

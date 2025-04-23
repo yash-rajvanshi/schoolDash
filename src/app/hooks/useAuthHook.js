@@ -1,19 +1,3 @@
-// 'use client';
-// import { useEffect } from 'react';
-// import { useRouter } from 'next/navigation';
-
-// export const useAuth = () => {
-//   const router = useRouter();
-
-//   useEffect(() => {
-//     const token = localStorage.getItem('token');
-//     if (!token) {
-//       router.push('/sign-in'); // adjust path if different
-//     }
-//   }, []);
-// };
-
-// src/app/hooks/useAuth.js
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -27,6 +11,8 @@ export const useAuth = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
+    
+    console.log(userData)
 
     if (!token || !userData) {
       router.push('/sign-in');
@@ -43,5 +29,13 @@ export const useAuth = () => {
     setLoading(false);
   }, []);
 
-  return { loading, user };
+  // ✅ Logout function
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    router.push('/sign-in');
+  };
+
+  return { loading, user, logout };
 };

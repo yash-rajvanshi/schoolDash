@@ -31,6 +31,9 @@ const ClassForm = dynamic(() => import("./forms/ClassForm.jsx"), {
 const SubjectForm = dynamic(() => import("./forms/SubjectForm.jsx"), {
   loading: () => <h1>Loading...</h1>,
 });
+const EventForm = dynamic(() => import("./forms/EventForm.jsx"), {
+  loading: () => <h1>Loading...</h1>,
+});
 
 
 
@@ -42,6 +45,7 @@ const forms = {
   announcement: (type, data) => <AnnouncementForm type={type} data={data} />,
   class: (type, data) => <ClassForm type={type} data={data} />,
   subject: (type, data) => <SubjectForm type={type} data={data} />,
+  event: (type, data) => <EventForm type={type} data={data} />,
 
 };
 
