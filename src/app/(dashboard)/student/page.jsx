@@ -1,4 +1,5 @@
-import Announcements from "@/components/Announcements";
+import AnnouncementsS from "@/components/Announcements";
+import Announcements from "@/components/AnnouncementsT";
 import BigCalendar from "@/components/BigCalendar";
 import EventCalendar from "@/components/EventCalendar";
 
@@ -15,7 +16,7 @@ const StudentPage = () => {
       {/* RIGHT */}
       <div className="w-full xl:w-1/3 flex flex-col gap-8">
         <EventCalendar />
-        <Announcements />
+        <AnnouncementsS />
       </div>
     </div>
   );

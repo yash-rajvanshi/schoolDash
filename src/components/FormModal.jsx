@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useState } from "react";
 
 // USE LAZY LOADING
-
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -35,21 +34,18 @@ const EventForm = dynamic(() => import("./forms/EventForm.jsx"), {
   loading: () => <h1>Loading...</h1>,
 });
 
-
-
 const forms = {
-  teacher: (type, data) => <TeacherForm type={type} data={data}  />,
-  student: (type, data) => <StudentForm type={type} data={data} />,
-  assignment: (type, data) => <AssignmentForm type={type} data={data} />,
-  exam: (type, data) => <EForm type={type} data={data} />,
-  announcement: (type, data) => <AnnouncementForm type={type} data={data} />,
-  class: (type, data) => <ClassForm type={type} data={data} />,
-  subject: (type, data) => <SubjectForm type={type} data={data} />,
-  event: (type, data) => <EventForm type={type} data={data} />,
-
+  teacher: (type, data, onSuccess) => <TeacherForm type={type} data={data} onSuccess={onSuccess} />,
+  student: (type, data, onSuccess) => <StudentForm type={type} data={data} onSuccess={onSuccess} />,
+  assignment: (type, data, onSuccess) => <AssignmentForm type={type} data={data} onSuccess={onSuccess} />,
+  exam: (type, data, onSuccess) => <EForm type={type} data={data} onSuccess={onSuccess} />,
+  announcement: (type, data, onSuccess) => <AnnouncementForm type={type} data={data} onSuccess={onSuccess} />,
+  class: (type, data, onSuccess) => <ClassForm type={type} data={data} onSuccess={onSuccess} />,
+  subject: (type, data, onSuccess) => <SubjectForm type={type} data={data} onSuccess={onSuccess} />,
+  event: (type, data, onSuccess) => <EventForm type={type} data={data} onSuccess={onSuccess} />,
 };
 
-const FormModal = ({ table, type, data, id }) => {
+const FormModal = ({ table, type, data, id, onSuccess, handleDelete }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
     type === "create"
@@ -60,7 +56,7 @@ const FormModal = ({ table, type, data, id }) => {
 
   const [open, setOpen] = useState(false);
   
-  const handleDelete = async (e) => {
+  const handleDeleteAction = async (e) => {
     e.preventDefault();
     if (!id || !table) return;
 
@@ -73,9 +69,15 @@ const FormModal = ({ table, type, data, id }) => {
 
       if (response.ok) {
         // alert(`${table} deleted successfully!`);
-        // setStudents((prev) => prev.filter((student) => student._id !== id));
         setOpen(false);
-        // if (onDeleteSuccess) onDeleteSuccess(id); // notify parent
+        // Call the provided handleDelete function if it exists
+        if (handleDelete) {
+          handleDelete(id);
+        }
+        // Call the onSuccess callback if it exists
+        if (onSuccess) {
+          onSuccess(id);
+        }
       } else {
         alert(result.error || "Failed to delete.");
       }
@@ -87,7 +89,7 @@ const FormModal = ({ table, type, data, id }) => {
 
   const Form = () => {
     return type === "delete" && id ? (
-      <form onSubmit={handleDelete} action="" className="p-4 flex flex-col gap-4">
+      <form onSubmit={handleDeleteAction} action="" className="p-4 flex flex-col gap-4">
         <span className="text-center font-medium">
           All data will be lost. Are you sure you want to delete this {table}?
         </span>
@@ -96,7 +98,7 @@ const FormModal = ({ table, type, data, id }) => {
         </button>
       </form>
     ) : type === "create" || type === "update" ? (
-      forms[table](type, data)
+      forms[table](type, data, onSuccess)
     ) : (
       "Form not found!"
     );

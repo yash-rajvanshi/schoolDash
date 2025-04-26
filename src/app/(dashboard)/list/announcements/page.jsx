@@ -28,8 +28,8 @@ const columns = [
     accessor: "title",
   },
   {
-    header: "Class",
-    accessor: "class",
+    header: "Concerned",
+    accessor: "classes",
   },
   {
     header: "Date",
@@ -63,37 +63,46 @@ const AnnouncementListPage = () => {
     }
   }, [page, role]);
 
-  const handleDeleteAnnouncement = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:9000/api/announcement/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        alert("Announcement deleted successfully!");
-        setAnnouncements((prev) => prev.filter((item) => item._id !== id));
-      } else {
-        const data = await response.json();
-        alert(data.error || "Failed to delete Announcement.");
-      }
-    } catch (error) {
-      console.error("Error deleting Announcement:", error);
-      alert("An error occurred while deleting the Announcement.");
+  const handleDeleteAnnouncement = (id) => {
+    // Immediately update the UI by removing the item
+    setAnnouncements((prev) => prev.filter((item) => item._id !== id));
+    
+    // Check if we should go to the previous page
+    if (announcements.length === 1 && page > 1) {
+      setPage(prev => prev - 1);
+    } else {
+      // Re-fetch data to ensure consistency
+      fetchAnnouncementsFromApi(page, limit, setAnnouncements, setTotalPages, setLoading);
     }
+  };
+
+  const handleFormSuccess = () => {
+    // Re-fetch data after successful create/update
+    fetchAnnouncementsFromApi(page, limit, setAnnouncements, setTotalPages, setLoading);
   };
 
   const renderRow = (item) => (
     <tr key={item._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="p-4">{item.title}</td>
       <td>{item.classes}</td>
-      {/* <td className="hidden md:table-cell">{item.date}</td> */}
-      <td className="hidden md:table-cell">{item.date}</td>
+      <td className="hidden md:table-cell">{new Date(item.date).toLocaleDateString()}</td>
       <td>
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher" ) && (
             <>
-              <FormModal table="announcement" type="update" data={item} />
-              <FormModal table="announcement" type="delete" id={item._id} handleDelete={() => handleDeleteAnnouncement(item._id)} />
+              <FormModal 
+                table="announcement" 
+                type="update" 
+                data={item} 
+                onSuccess={handleFormSuccess}
+              />
+              <FormModal 
+                table="announcement" 
+                type="delete" 
+                id={item._id} 
+                handleDelete={handleDeleteAnnouncement}
+                onSuccess={handleFormSuccess}
+              />
             </>
           )}
         </div>
@@ -124,7 +133,11 @@ const AnnouncementListPage = () => {
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
             {(role === "admin" || role === "teacher") && (
-              <FormModal table="announcement" type="create" />
+              <FormModal 
+                table="announcement" 
+                type="create" 
+                onSuccess={handleFormSuccess}
+              />
             )}
           </div>
         </div>
@@ -144,5 +157,3 @@ const AnnouncementListPage = () => {
 };
 
 export default AnnouncementListPage;
-
-

@@ -1,4 +1,4 @@
-import Announcements from "@/components/Announcements";
+import Announcements from "@/components/AnnouncementsT";
 import BigCalendar from "@/components/BigCalendar";
 
 const ParentPage = () => {

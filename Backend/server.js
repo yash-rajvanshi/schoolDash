@@ -39,7 +39,7 @@ app.get("/", (req,res)=>{
     res.send("WELCOME TO RABBIT API!");
 })
 
-app.use('/api/auth', authRoutes);
+
 
 //API Routes 
 // app.use("/api/users",userRoutes);  
@@ -55,6 +55,7 @@ app.use("/api/result", resultsRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/event", eventsRoutes);
 app.use("/api/announcement", announcementsRoutes);
+app.use('/api/auth', authRoutes);
 
 
 app.listen(PORT,()=>{

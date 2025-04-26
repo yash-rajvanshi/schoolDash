@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 router.post("/", async (req, res) => {
-  const { email, password, firstName, lastName, ...teacherData } = req.body;
+  const { email, password, firstName, lastName, photo, ...teacherData } = req.body;
 
   try {
     // 1. Check if user already exists
@@ -26,6 +26,7 @@ router.post("/", async (req, res) => {
       role: "teacher",
       firstName,
       lastName,
+      photo,
     });
 
     // 4. Create the teacher
@@ -34,12 +35,13 @@ router.post("/", async (req, res) => {
       email,
       firstName,
       lastName,
+      photo
     });
     await newTeacher.save();
 
     // 5. Generate JWT token
     const token = jwt.sign(
-      { id: newUser._id, email: newUser.email, role: newUser.role, firstName: newUser.firstName,lastName: newUser.lastName  },
+      { id: newUser._id, email: newUser.email, role: newUser.role, firstName: newUser.firstName,lastName: newUser.lastName, photo: newUser.photo  },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -54,6 +56,7 @@ router.post("/", async (req, res) => {
         role: newUser.role,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
+        photo: newUser.photo,
       }
     });
   } catch (error) {

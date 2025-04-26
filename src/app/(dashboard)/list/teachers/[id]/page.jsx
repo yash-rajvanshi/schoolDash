@@ -1,6 +1,6 @@
 "use client";
 
-import Announcements from '@/components/Announcements';
+import Announcements from '@/components/AnnouncementsT';
 import BigCalendar from '@/components/BigCalendar';
 import Performance from '@/components/Performance';
 import FormModal from '@/components/FormModal';
@@ -12,6 +12,7 @@ import { useParams } from 'next/navigation';
 const SingleTeacherPage = () => {
   const { id } = useParams();
   const [teacher, setTeacher] = useState(null);
+  const [classData, setClassData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [role, setRole] = useState('');
@@ -23,7 +24,6 @@ const SingleTeacherPage = () => {
     }
   }, []);
 
-
   useEffect(() => {
     const fetchTeacher = async () => {
       try {
@@ -32,6 +32,20 @@ const SingleTeacherPage = () => {
 
         const data = await res.json();
         setTeacher(data);
+        
+        // If teacher has classes, fetch class details
+        if (data.classes && data.classes.length > 0) {
+          // Fetch class details for each class ID
+          const classPromises = data.classes.map(classId => 
+            fetch(`http://localhost:9000/api/class/${classId}`).then(res => {
+              if (!res.ok) throw new Error(`Class with ID ${classId} not found`);
+              return res.json();
+            })
+          );
+          
+          const classesData = await Promise.all(classPromises);
+          setClassData(classesData);
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -48,7 +62,6 @@ const SingleTeacherPage = () => {
   const attendanceValue = teacher?.attendance || "N/A";
   const gradeValue = teacher?.grade || "N/A";
   const resultsCount = teacher?.results?.length ?? 0;
-  const classValue = teacher?.classes || "N/A";
 
   return (
     <div className='flex-1 p-4 flex flex-col gap-4 xl:flex-row'>
@@ -61,7 +74,7 @@ const SingleTeacherPage = () => {
                 alt={teacher?.firstName || "Teacher Photo"}
                 width={144}
                 height={144}
-                className='w-36 h-36 rounded-full object-cover'
+                className='w-28 h-28 rounded-full object-cover'
               />
             </div>
             <div className='w-2/3 flex flex-col justify-between gap-4'>
@@ -122,11 +135,15 @@ const SingleTeacherPage = () => {
               <Image src='/singleClass.png' alt="" width={24} height={24} className='w-6 h-6' />
               <div>
                 <div className="flex flex-wrap gap-2">
-                  {classValue.map((classItem, index) => (
-                    <h1 key={index} className="text-xl font-semibold">
-                      {classItem}
-                    </h1>
-                  ))}
+                  {classData.length > 0 ? (
+                    classData.map((classItem, index) => (
+                      <h1 key={index} className="text-xl font-semibold">
+                        {classItem.name || "Unnamed Class"}
+                      </h1>
+                    ))
+                  ) : (
+                    <h1 className="text-xl font-semibold">No Classes</h1>
+                  )}
                 </div>
                 <span className="text-sm text-gray-400">Classes</span>
               </div>

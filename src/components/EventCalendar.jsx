@@ -9,21 +9,21 @@ import "react-calendar/dist/Calendar.css";
 const events = [
   {
     id: 1,
-    title: "Lorem ipsum dolor",
-    time: "12:00 PM - 2:00 PM",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    title: "Annual Science Fair",
+    time: "10:00 AM - 3:00 PM",
+    description: "Students showcase innovative science projects. Open to parents and community members. Judges from local universities will award prizes.",
   },
   {
     id: 2,
-    title: "Lorem ipsum dolor",
-    time: "12:00 PM - 2:00 PM",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    title: "Spring Band Concert",
+    time: "7:00 PM - 9:00 PM",
+    description: "Join us for an evening of music featuring performances by the jazz band, concert band, and orchestra in the main auditorium.",
   },
   {
     id: 3,
-    title: "Lorem ipsum dolor",
-    time: "12:00 PM - 2:00 PM",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    title: "Parent-Teacher Conferences",
+    time: "4:00 PM - 8:00 PM",
+    description: "Schedule appointments with your child's teachers to discuss academic progress and address any concerns.",
   },
 ];
 

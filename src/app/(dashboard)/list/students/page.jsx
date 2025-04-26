@@ -84,24 +84,26 @@ const StudentlistPage = () => {
     }
   };
 
-  const handleDeleteStudent = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:9000/api/student/${id}`, {
-        method: "DELETE",
-      });
+  // Add this function to your list page component
+const handleDeleteStudent = (id) => {
+  // Immediately update the UI by removing the item
+  setStudents((prev) => prev.filter((item) => item._id !== id));
+  
+  // Check if we should go to the previous page
+  if (students.length === 1 && page > 1) {
+    setPage(prev => prev - 1);
+  } else {
+    // Re-fetch data to ensure consistency
+    fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading);
+  }
+};
 
-      if (response.ok) {
-        alert("Student deleted successfully!");
-        setStudents((prev) => prev.filter((student) => student._id !== id));
-      } else {
-        const data = await response.json();
-        alert(data.error || "Failed to delete student.");
-      }
-    } catch (error) {
-      console.error("Error deleting student:", error);
-      alert("An error occurred while deleting the student.");
-    }
-  };
+// Add this function to handle any form success (create/update)
+const handleFormSuccess = () => {
+  // Re-fetch data after successful create/update
+  fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading);
+};
+
 
   const renderRow = (student) => (
     <tr key={student._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-ySkyLight">
@@ -128,7 +130,8 @@ const StudentlistPage = () => {
               table="student"
               type="delete"
               id={student._id}
-              handleDelete={() => handleDeleteStudent(student._id)}
+              handleDelete={handleDeleteStudent}
+              onSuccess={handleFormSuccess}
             />
           )}
         </div>

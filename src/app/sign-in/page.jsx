@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { login } from '@/app/lib/api';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { PropagateLoader } from 'react-spinners';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [bgPosition, setBgPosition] = useState(0);
 
@@ -23,20 +25,28 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-    const result = await login(email, password);
+    setIsLoading(true);
 
-    if (result.success) {
-      const role = result.user.role;
-      localStorage.setItem('token', result.token);
-      localStorage.setItem('user', JSON.stringify(result.user));
+    try {
+      const result = await login(email, password);
 
-      if (role === 'admin') router.push('/admin');
-      else if (role === 'teacher') router.push('/teacher');
-      else if (role === 'parent') router.push('/parent');
-      else if (role === 'student') router.push('/student');
-      else setErrorMsg('Unknown role. Please contact support.');
-    } else {
-      setErrorMsg(result.message || 'Login failed');
+      if (result.success) {
+        const role = result.user.role;
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+
+        if (role === 'admin') router.push('/admin');
+        else if (role === 'teacher') router.push('/teacher');
+        else if (role === 'parent') router.push('/parent');
+        else if (role === 'student') router.push('/student');
+        else setErrorMsg('Unknown role. Please contact support.');
+      } else {
+        setErrorMsg(result.message || 'Login failed');
+      }
+    } catch (error) {
+      setErrorMsg('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,7 +72,7 @@ export default function LoginPage() {
 
         <div className='flex justify-center items-center'>
           <motion.div
-            className="absolute -top-24  transform -translate-x-1/2 bg-white rounded-full p-4 "
+            className="absolute -top-24 transform -translate-x-1/2 bg-white rounded-full p-4"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.3 }}
@@ -80,15 +90,19 @@ export default function LoginPage() {
           Welcome Back to Campus!
         </motion.h2>
 
+        <div className='flex items-center justify-center'>
         {errorMsg && (
           <motion.div
-            className="mb-4 text-center text-red-500 text-sm"
+            className="mb-4 text-center text-red-500 text-sm  bg-lamaYellow w-fit py-2 px-3 rounded-full"
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
             {errorMsg}
           </motion.div>
         )}
+        </div>
+
+        
 
         <form onSubmit={handleSubmit}>
           <motion.div
@@ -123,14 +137,100 @@ export default function LoginPage() {
             />
           </motion.div>
 
-          <motion.button
-            type="submit"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold tracking-wide transition-all shadow-lg"
-          >
-            Sign In
-          </motion.button>
+          <div className="relative">
+            {/* Button background with animated edges */}
+            <motion.div
+              className={`absolute inset-0 bg-blue-600 rounded-lg overflow-hidden ${isLoading ? 'opacity-100' : 'opacity-0'}`}
+              initial={false}
+              animate={isLoading ? { opacity: 1 } : { opacity: 0 }}
+            >
+              {/* Top edge animation */}
+              <motion.div
+                className="absolute top-0 left-0 right-0 h-1 bg-blue-300"
+                animate={isLoading ? {
+                  x: ["0%", "100%", "0%"],
+                  width: ["30%", "50%", "30%"],
+                  opacity: [0.5, 1, 0.5]
+                } : {}}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+
+              {/* Bottom edge animation */}
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 h-1 bg-blue-300"
+                animate={isLoading ? {
+                  x: ["100%", "0%", "100%"],
+                  width: ["40%", "60%", "40%"],
+                  opacity: [0.5, 1, 0.5]
+                } : {}}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+
+              {/* Left edge animation */}
+              <motion.div
+                className="absolute left-0 top-0 bottom-0 w-1 bg-blue-300"
+                animate={isLoading ? {
+                  y: ["0%", "100%", "0%"],
+                  height: ["30%", "50%", "30%"],
+                  opacity: [0.5, 1, 0.5]
+                } : {}}
+                transition={{
+                  duration: 2.2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+
+              {/* Right edge animation */}
+              <motion.div
+                className="absolute right-0 top-0 bottom-0 w-1 bg-blue-300"
+                animate={isLoading ? {
+                  y: ["100%", "0%", "100%"],
+                  height: ["40%", "60%", "40%"],
+                  opacity: [0.5, 1, 0.5]
+                } : {}}
+                transition={{
+                  duration: 2.3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </motion.div>
+
+            {/* Actual button */}
+            <motion.button
+              type="submit"
+              disabled={isLoading}
+              whileHover={{ scale: isLoading ? 1 : 1.03 }}
+              whileTap={{ scale: isLoading ? 1 : 0.97 }}
+              className={`relative w-full bg-[#3B8A88] hover:bg-[#4AAEAB] text-white py-3 rounded-lg font-semibold tracking-wide transition-all shadow-lg flex items-center justify-center`}
+              style={{ minHeight: isLoading ? "46px" : "" }}
+            >
+              {isLoading ? (
+                
+
+                <div className="flex items-center justify-center">
+                <PropagateLoader
+                color="#fff"
+                cssOverride={{}}
+                loading
+                size={7}
+                speedMultiplier={1}
+              />
+                </div>
+              ) : (
+                "Sign In"
+              )}
+            </motion.button>
+          </div>
         </form>
       </motion.div>
     </motion.div>

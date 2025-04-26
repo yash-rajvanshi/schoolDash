@@ -8,6 +8,7 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from '@/app/hooks/useAuthHook';
+import { PropagateLoader, SyncLoader } from "react-spinners";
 
 const fetchTeachersFromApi = async (page, limit, setTeachers, setTotalPages, setLoading) => {
   try {
@@ -92,9 +93,9 @@ const TeacherListPage = () => {
   // Modified function to handle both single ID and array of IDs for classes
   const getClassName = (idOrIds) => {
     if (!Array.isArray(classes)) {
-      return "Loading...";
+      return "Loading...3";
     }
-    
+
     // Handle array of IDs
     if (Array.isArray(idOrIds)) {
       return idOrIds.map(id => {
@@ -102,7 +103,7 @@ const TeacherListPage = () => {
         return foundClass ? foundClass.name : "Unknown";
       }).join(", ");
     }
-    
+
     // Handle comma-separated string of IDs
     if (typeof idOrIds === 'string' && idOrIds.includes(',')) {
       const idArray = idOrIds.split(',').map(id => id.trim());
@@ -111,7 +112,7 @@ const TeacherListPage = () => {
         return foundClass ? foundClass.name : "Unknown";
       }).join(", ");
     }
-    
+
     // Handle single ID (original functionality)
     const foundClass = classes.find((t) => t && t._id === idOrIds);
     return foundClass ? `${foundClass.name}` : "Unknown";
@@ -120,9 +121,9 @@ const TeacherListPage = () => {
   // Function to get subject names from subject IDs
   const getSubjectName = (idOrIds) => {
     if (!Array.isArray(subjects)) {
-      return "Loading...";
+      return "Loading...1";
     }
-    
+
     // Handle array of IDs
     if (Array.isArray(idOrIds)) {
       return idOrIds.map(id => {
@@ -130,7 +131,7 @@ const TeacherListPage = () => {
         return foundSubject ? foundSubject.name : "Unknown";
       }).join(", ");
     }
-    
+
     // Handle comma-separated string of IDs
     if (typeof idOrIds === 'string' && idOrIds.includes(',')) {
       const idArray = idOrIds.split(',').map(id => id.trim());
@@ -139,7 +140,7 @@ const TeacherListPage = () => {
         return foundSubject ? foundSubject.name : "Unknown";
       }).join(", ");
     }
-    
+
     // Handle single ID
     const foundSubject = subjects.find((s) => s && s._id === idOrIds);
     return foundSubject ? `${foundSubject.name}` : "Unknown";
@@ -182,44 +183,44 @@ const TeacherListPage = () => {
       alert("An error occurred while creating the Teacher.");
     }
   };
-  
-  const handleDeleteTeacher = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:9000/api/teacher/${id}`, {
-        method: "DELETE",
-      });
 
-      if (response.ok) {
-        alert("Teacher deleted successfully!");
-        setTeachers((prev) => prev.filter((teacher) => teacher._id !== id));
-      } else {
-        const data = await response.json();
-        alert(data.error || "Failed to delete Teacher.");
-      }
-    } catch (error) {
-      console.error("Error deleting Teacher:", error);
-      alert("An error occurred while deleting the Teacher.");
+  const handleDeleteTeacher = (id) => {
+    // Immediately update the UI by removing the item
+    setTeachers((prev) => prev.filter((item) => item._id !== id));
+    
+    // Check if we should go to the previous page
+    if (teachers.length === 1 && page > 1) {
+      setPage(prev => prev - 1);
+    } else {
+      // Re-fetch data to ensure consistency
+      fetchTeachersFromApi(page, limit, setTeachers, setTotalPages, setLoading);
     }
+  };
+  
+  // Add this function to handle any form success (create/update)
+  const handleFormSuccess = () => {
+    // Re-fetch data after successful create/update
+    fetchTeachersFromApi(page, limit, setTeachers, setTotalPages, setLoading);
   };
 
   const renderRow = (teacher) => (
     <tr key={teacher._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-ySkyLight">
       <td className="flex items-center gap-4 p-4">
-        <Image 
+        <Image
           src={teacher.photo || "/noavatar.png"} alt="Teacher Photo" width={40} height={40} className="md:hidden xl:block w-10 h-10 rounded-full object-cover" />
         <div className="flex flex-col">
           <h3 className="font-semibold">{teacher.firstName}</h3>
           <span className="text-gray-500 text-xs">
-            {subjectsLoading ? "Loading..." : getSubjectName(teacher.subjects)}
+            {subjectsLoading ? "Loading...4" : getSubjectName(teacher.subjects)}
           </span>
         </div>
       </td>
       <td className="hidden md:table-cell">{teacher.teacherId}</td>
       <td className="hidden md:table-cell">
-        {subjectsLoading ? "Loading..." : getSubjectName(teacher.subjects)}
+        {subjectsLoading ? "Loading...5" : getSubjectName(teacher.subjects)}
       </td>
       <td className="hidden md:table-cell">
-        {classesLoading ? "Loading..." : getClassName(teacher.classes.join(","))}
+        {classesLoading ? "Loading...6" : getClassName(teacher.classes.join(","))}
       </td>
       <td className="hidden lg:table-cell">{teacher.phone}</td>
       <td className="hidden lg:table-cell">{teacher.address}</td>
@@ -235,7 +236,8 @@ const TeacherListPage = () => {
               table="teacher"
               type="delete"
               id={teacher._id}
-              handleDelete={() => handleDeleteTeacher(teacher._id)}
+              handleDelete={handleDeleteTeacher}
+              onSuccess={handleFormSuccess}
             />
           )}
         </div>
@@ -245,9 +247,18 @@ const TeacherListPage = () => {
 
   // Handle conditional rendering here, after all hooks
   if (authLoading) {
-    return <p className="text-center mt-10">Loading...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <SyncLoader
+          color="#6366f1"
+          margin={5}
+          size={10}
+          speedMultiplier={0.8}
+        />
+      </div>
+    );
   }
-  
+
   if (user?.role !== 'admin' && user?.role !== 'teacher') {
     return <p className="text-center mt-10">Access denied</p>;
   }
@@ -270,7 +281,19 @@ const TeacherListPage = () => {
         </div>
       </div>
 
-      {loading ? <p>Loading teachers...</p> : <Table columns={columns} renderRow={renderRow} data={teachers} />}
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <PropagateLoader
+            color="#6366f1" // Using a more visible color (indigo)
+            cssOverride={{}}
+            loading
+            size={10}
+            speedMultiplier={1}
+          />
+        </div>
+      ) : (
+        <Table columns={columns} renderRow={renderRow} data={teachers} />
+      )}
 
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
     </div>

@@ -7,26 +7,8 @@ const express = require("express");
 const router = express.Router();
 const Student = require("../models/student");
 
-// 📌 Create new student(s)
-// router.post("/", async (req, res) => {
-//   try {
-//     if (Array.isArray(req.body)) {
-//       const students = await Student.insertMany(req.body);
-//       res.status(201).json({ message: "Students added successfully!", students });
-//     } else {
-//       const newStudent = new Student(req.body);
-//       await newStudent.save();
-//       res.status(201).json({ message: "Student added successfully!", student: newStudent });
-//     }
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
-
-
-
 router.post("/", async (req, res) => {
-  const { email, password, ...studentData } = req.body;
+  const { email, password, firstName, lastName, photo, ...studentData } = req.body;
 
   try {
     // 1. Check if user already exists
@@ -41,19 +23,25 @@ router.post("/", async (req, res) => {
     const newUser = await User.create({
       email,
       password: hashedPassword,
-      role: "student"
+      role: "student",
+      firstName,
+      lastName,
+      photo,
     });
 
     // 4. Create the student
     const newStudent = new Student({
       ...studentData,
       email, // only if your student schema needs email too
+      firstName,
+      lastName,
+      photo
     });
     await newStudent.save();
 
     // 5. Generate JWT token
     const token = jwt.sign(
-      { id: newUser._id, email: newUser.email, role: newUser.role },
+      { id: newUser._id, email: newUser.email, role: newUser.role, firstName: newUser.firstName,lastName: newUser.lastName, photo: newUser.photo  },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -63,6 +51,13 @@ router.post("/", async (req, res) => {
       message: "Student and user registered successfully!",
       student: newStudent,
       token,
+      user: {
+        email: newUser.email,
+        role: newUser.role,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        photo: newUser.photo,
+      }
     });
   } catch (error) {
     // Rollback user if student creation fails

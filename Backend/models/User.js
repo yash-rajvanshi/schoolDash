@@ -22,13 +22,14 @@ const userSchema = new mongoose.Schema({
   },
   firstName: { type: String, required: true }, // 👈 add this
   lastName: { type: String, required: true },  // 👈 add this
+  photo: { type: String },
   password: {
     type: String,
     required: true
   },
   role: {
     type: String,
-    enum: ['admin', 'teacher', 'student'],
+    enum: ['admin', 'teacher', 'student', 'parent'],
     default: 'student'
   }
 });

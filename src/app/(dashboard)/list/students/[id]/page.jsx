@@ -1,6 +1,6 @@
 "use client";
 
-import Announcements from '@/components/Announcements';
+import Announcements from '@/components/AnnouncementsT';
 import BigCalendar from '@/components/BigCalendar';
 import Performance from '@/components/Performance';
 import FormModal from '@/components/FormModal';
@@ -63,7 +63,7 @@ const SingleStudentPage = () => {
                                 alt={student?.firstName || "Student Photo"}
                                 width={144}
                                 height={144}
-                                className='w-36 h-36 rounded-full object-cover'
+                                className='w-28 h-28 rounded-full object-cover'
                             />
                         </div>
                         <div className='w-2/3 flex flex-col justify-between gap-4'>

@@ -1,5 +1,5 @@
 'use client';
-import Announcements from "@/components/Announcements"
+import Announcements from "@/components/AnnouncementsT"
 import AttendanceChart from "@/components/AttendanceChart"
 import CountChart from "@/components/CountChart";
 import EventCalendar from "@/components/EventCalendar";
