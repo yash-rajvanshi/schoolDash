@@ -11,7 +11,7 @@ import { useAuth } from '@/app/hooks/useAuthHook';
 const fetchAssignmentsFromApi = async (page, limit, setAssignments, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/assignment?page=${page}&limit=${limit}`);
+    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/assignment?page=${page}&limit=${limit}`);
     const data = await response.json();
     setAssignments(data.assignments);
     setTotalPages(data.totalPages);
@@ -53,7 +53,7 @@ const AssignmentListPage = () => {
 
   const handleDeleteAssignment = async (id) => {
     try {
-      const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/assignment/${id}`, {
+      const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/assignment/${id}`, {
         method: "DELETE",
       });
 

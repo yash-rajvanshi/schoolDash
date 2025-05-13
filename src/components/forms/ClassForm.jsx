@@ -46,7 +46,7 @@ const ClassForm = ({ type, data }) => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/teacher");
+        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
         const json = await res.json();
         console.log("Fetched Teachers:", json);
         setTeachers(json.teachers);
@@ -66,8 +66,8 @@ const ClassForm = ({ type, data }) => {
 
       const url =
         type === "update"
-          ? `https://backend-dashboard-sy1c.onrender.com/api/class/${data?._id}`
-          : "https://backend-dashboard-sy1c.onrender.com/api/class";
+          ? `https://backend-dashboard-l273.onrender.com/api/class/${data?._id}`
+          : "https://backend-dashboard-l273.onrender.com/api/class";
 
       await fetch(url, {
         method: type === "update" ? "PUT" : "POST",

@@ -1,6 +1,6 @@
 export const login = async (email, password) => {
     try {
-      const res = await fetch('https://backend-dashboard-sy1c.onrender.com/api/auth/login', {
+      const res = await fetch('https://backend-dashboard-l273.onrender.com/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

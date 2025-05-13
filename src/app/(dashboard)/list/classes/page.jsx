@@ -12,7 +12,7 @@ import { useAuth } from '@/app/hooks/useAuthHook';
 const fetchClasssFromApi = async (page, limit, setClasss, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/class?page=${page}&limit=${limit}`);
+    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/class?page=${page}&limit=${limit}`);
     const data = await response.json();
     setClasss(data.classes);
     setTotalPages(data.totalPages);
@@ -39,7 +39,7 @@ const ClassListPage = () => {
     const fetchTeachers = async () => {
       try {
         setTeachersLoading(true);
-        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/teacher");
+        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
         const data = await res.json();
         // Make sure we're setting an array
         setTeachers(Array.isArray(data) ? data : (data.teachers || []));
@@ -77,7 +77,7 @@ const ClassListPage = () => {
 
   const handleDeleteClass = async (id) => {
     try {
-      const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/class/${id}`, {
+      const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/class/${id}`, {
         method: "DELETE",
       });
 

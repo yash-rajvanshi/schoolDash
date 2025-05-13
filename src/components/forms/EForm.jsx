@@ -53,7 +53,7 @@ const EForm = ({ type, data }) => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/subject");
+        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/subject");
         const json = await res.json();
         console.log("Fetched Subjects:", json);
         setSubjects(json.subjects || []);
@@ -64,7 +64,7 @@ const EForm = ({ type, data }) => {
     
     const fetchClasses = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/class");
+        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/class");
         const json = await res.json();
         console.log("Fetched Classes:", json);
         setClasses(json.classes || []);
@@ -75,7 +75,7 @@ const EForm = ({ type, data }) => {
     
     const fetchTeachers = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/teacher");
+        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
         const json = await res.json();
         console.log("Fetched Teachers:", json);
         setTeachers(json.teachers || []);
@@ -125,8 +125,8 @@ const EForm = ({ type, data }) => {
   
       const url =
         type === "update"
-          ? `https://backend-dashboard-sy1c.onrender.com/api/exam/${data?._id}`
-          : "https://backend-dashboard-sy1c.onrender.com/api/exam";
+          ? `https://backend-dashboard-l273.onrender.com/api/exam/${data?._id}`
+          : "https://backend-dashboard-l273.onrender.com/api/exam";
   
       const response = await fetch(url, {
         method: type === "update" ? "PUT" : "POST",

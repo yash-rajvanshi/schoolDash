@@ -61,7 +61,7 @@ const SubjectForm = ({ type, data }) => {
     useEffect(() => {
       const fetchTeachers = async () => {
         try {
-          const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/teacher");
+          const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
           const json = await res.json();
           console.log("Fetched Teachers:", json);
           setTeachers(json.teachers);
@@ -162,7 +162,7 @@ const SubjectForm = ({ type, data }) => {
         }
         
         // Update teacher record
-        const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/teacher/${teacherId}`, {
+        const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/teacher/${teacherId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -195,8 +195,8 @@ const SubjectForm = ({ type, data }) => {
         // Step 1: Save/update the subject
         const url =
           type === "update"
-            ? `https://backend-dashboard-sy1c.onrender.com/api/subject/${data?._id}`
-            : "https://backend-dashboard-sy1c.onrender.com/api/subject";
+            ? `https://backend-dashboard-l273.onrender.com/api/subject/${data?._id}`
+            : "https://backend-dashboard-l273.onrender.com/api/subject";
     
         const response = await fetch(url, {
           method: type === "update" ? "PUT" : "POST",

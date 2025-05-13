@@ -27,7 +27,7 @@ const SingleTeacherPage = () => {
   useEffect(() => {
     const fetchTeacher = async () => {
       try {
-        const res = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/teacher/${id}`);
+        const res = await fetch(`https://backend-dashboard-l273.onrender.com/api/teacher/${id}`);
         if (!res.ok) throw new Error("Teacher not found");
 
         const data = await res.json();
@@ -37,7 +37,7 @@ const SingleTeacherPage = () => {
         if (data.classes && data.classes.length > 0) {
           // Fetch class details for each class ID
           const classPromises = data.classes.map(classId => 
-            fetch(`https://backend-dashboard-sy1c.onrender.com/api/class/${classId}`).then(res => {
+            fetch(`https://backend-dashboard-l273.onrender.com/api/class/${classId}`).then(res => {
               if (!res.ok) throw new Error(`Class with ID ${classId} not found`);
               return res.json();
             })
