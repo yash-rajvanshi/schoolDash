@@ -108,7 +108,7 @@ const TeacherForm = ({ type, data }) => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const res = await fetch("http://localhost:9000/api/class");
+        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/class");
         const json = await res.json();
         console.log("Fetched Classes:", json);
         setClasses(json.classes);
@@ -119,7 +119,7 @@ const TeacherForm = ({ type, data }) => {
     
     const fetchSubjects = async () => {
       try {
-        const res = await fetch("http://localhost:9000/api/subject");
+        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/subject");
         const json = await res.json();
         console.log("Fetched Subjects:", json);
         setSubjects(json.subjects || []); // Ensure we have an array even if API returns differently
@@ -253,7 +253,7 @@ const TeacherForm = ({ type, data }) => {
       // Process subjects to add teacher to
       for (const subjectId of subjectsToAdd) {
         // First get the current subject data
-        const getResponse = await fetch(`http://localhost:9000/api/subject/${subjectId}`);
+        const getResponse = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/subject/${subjectId}`);
         const subjectData = await getResponse.json();
         
         // Prepare updated teachers array - ensure we don't add duplicates
@@ -263,7 +263,7 @@ const TeacherForm = ({ type, data }) => {
         }
         
         // Update the subject
-        await fetch(`http://localhost:9000/api/subject/${subjectId}`, {
+        await fetch(`https://backend-dashboard-sy1c.onrender.com/api/subject/${subjectId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -275,7 +275,7 @@ const TeacherForm = ({ type, data }) => {
       // Process subjects to remove teacher from
       for (const subjectId of subjectsToRemove) {
         // First get the current subject data
-        const getResponse = await fetch(`http://localhost:9000/api/subject/${subjectId}`);
+        const getResponse = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/subject/${subjectId}`);
         const subjectData = await getResponse.json();
         
         // Prepare updated teachers array - filter out this teacher
@@ -287,7 +287,7 @@ const TeacherForm = ({ type, data }) => {
           : [];
         
         // Update the subject
-        await fetch(`http://localhost:9000/api/subject/${subjectId}`, {
+        await fetch(`https://backend-dashboard-sy1c.onrender.com/api/subject/${subjectId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -317,8 +317,8 @@ const TeacherForm = ({ type, data }) => {
 
       const url =
         type === "update"
-          ? `http://localhost:9000/api/teacher/${data?._id}`
-          : "http://localhost:9000/api/teacher";
+          ? `https://backend-dashboard-sy1c.onrender.com/api/teacher/${data?._id}`
+          : "https://backend-dashboard-sy1c.onrender.com/api/teacher";
 
       const response = await fetch(url, {
         method: type === "update" ? "PUT" : "POST",

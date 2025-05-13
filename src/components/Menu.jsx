@@ -14,7 +14,19 @@ const menuItems = [
         icon: "/home.png",
         label: "Home",
         href: "/admin",
-        visible: ["admin", "teacher", "student", "parent"],
+        visible: ["admin"],
+      },
+      {
+        icon: "/home.png",
+        label: "Home",
+        href: "/teacher",
+        visible: ["teacher"],
+      },
+      {
+        icon: "/home.png",
+        label: "Home",
+        href: "/student",
+        visible: ["student"],
       },
       {
         icon: "/teacher.png",
@@ -87,12 +99,12 @@ const menuItems = [
   {
     title: "OTHER",
     items: [
-      {
-        icon: "/profile.png",
-        label: "Sign In",
-        href: "/sign-in",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
+      // {
+      //   icon: "/profile.png",
+      //   label: "Sign In",
+      //   href: "/sign-in",
+      //   visible: ["admin", "teacher", "student", "parent"],
+      // },
       {
         icon: "/logout.png",
         label: "Logout",

@@ -13,7 +13,7 @@ import { PropagateLoader, SyncLoader } from "react-spinners";
 const fetchTeachersFromApi = async (page, limit, setTeachers, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`http://localhost:9000/api/teacher?page=${page}&limit=${limit}`);
+    const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/teacher?page=${page}&limit=${limit}`);
     const data = await response.json();
     setTeachers(data.teachers);
     setTotalPages(data.totalPages);
@@ -55,7 +55,7 @@ const TeacherListPage = () => {
     const fetchClasses = async () => {
       try {
         setClassesLoading(true);
-        const res = await fetch("http://localhost:9000/api/class");
+        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/class");
         const data = await res.json();
         // Make sure we're setting an array
         setClasses(Array.isArray(data) ? data : (data.classes || []));
@@ -75,7 +75,7 @@ const TeacherListPage = () => {
     const fetchSubjects = async () => {
       try {
         setSubjectsLoading(true);
-        const res = await fetch("http://localhost:9000/api/subject");
+        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/subject");
         const data = await res.json();
         // Make sure we're setting an array
         setSubjects(Array.isArray(data) ? data : (data.subjects || []));
@@ -166,7 +166,7 @@ const TeacherListPage = () => {
         formData.append(key, data[key]);
       });
 
-      const response = await fetch("http://localhost:9000/api/teacher", {
+      const response = await fetch("https://backend-dashboard-sy1c.onrender.com/api/teacher", {
         method: "POST",
         body: formData,
       });

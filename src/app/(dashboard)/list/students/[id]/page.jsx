@@ -29,7 +29,7 @@ const SingleStudentPage = () => {
     useEffect(() => {
         const fetchStudent = async () => {
             try {
-                const res = await fetch(`http://localhost:9000/api/student/${id}`);
+                const res = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/student/${id}`);
                 if (!res.ok) throw new Error("Student not found");
 
                 const data = await res.json();

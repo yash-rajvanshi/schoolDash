@@ -12,7 +12,7 @@ import { useAuth } from '@/app/hooks/useAuthHook';
 const fetchSubjectsFromApi = async (page, limit, setSubjects, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`http://localhost:9000/api/subject?page=${page}&limit=${limit}`);
+    const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/subject?page=${page}&limit=${limit}`);
     const data = await response.json();
     setSubjects(data.subjects);
     setTotalPages(data.totalPages);
@@ -39,7 +39,7 @@ const SubjectListPage = () => {
     const fetchTeachers = async () => {
       try {
         setTeachersLoading(true);
-        const res = await fetch("http://localhost:9000/api/teacher");
+        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/teacher");
         const data = await res.json();
         // Make sure we're setting an array
         setTeachers(Array.isArray(data) ? data : (data.teachers || []));
@@ -80,7 +80,7 @@ const SubjectListPage = () => {
 
   const handleDeleteSubject = async (id) => {
     try {
-      const response = await fetch(`http://localhost:9000/api/subject/${id}`, {
+      const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/subject/${id}`, {
         method: "DELETE",
       });
 

@@ -13,7 +13,7 @@ import { useAuth } from '@/app/hooks/useAuthHook'; //for role
 const fetchStudentsFromApi = async (page, limit, setStudents, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`http://localhost:9000/api/student?page=${page}&limit=${limit}`); //fetchWithAuth can be used
+    const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/student?page=${page}&limit=${limit}`); //fetchWithAuth can be used
     const data = await response.json();
     setStudents(data.students);
     setTotalPages(data.totalPages);
@@ -66,7 +66,7 @@ const StudentlistPage = () => {
         formData.append(key, data[key]);
       });
 
-      const response = await fetch("http://localhost:9000/api/student", {
+      const response = await fetch("https://backend-dashboard-sy1c.onrender.com/api/student", {
         method: "POST",
         body: formData,
       });

@@ -61,7 +61,7 @@ const FormModal = ({ table, type, data, id, onSuccess, handleDelete }) => {
     if (!id || !table) return;
 
     try {
-      const response = await fetch(`http://localhost:9000/api/${table}/${id}`, {
+      const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/${table}/${id}`, {
         method: "DELETE",
       });
 

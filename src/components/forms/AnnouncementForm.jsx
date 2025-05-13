@@ -42,8 +42,8 @@ const AnnouncementForm = ({ type, data }) => {
   
       const url =
         type === "update"
-          ? `http://localhost:9000/api/announcement/${data?._id}`
-          : "http://localhost:9000/api/announcement";
+          ? `https://backend-dashboard-sy1c.onrender.com/api/announcement/${data?._id}`
+          : "https://backend-dashboard-sy1c.onrender.com/api/announcement";
   
       await fetch(url, {
         method: type === "update" ? "PUT" : "POST",

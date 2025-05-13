@@ -19,7 +19,7 @@ const fetchEventsFromApi = async (page, limit, searchParams, setEvents, setTotal
       queryString += `&searchTerm=${searchParams.term}&searchField=${searchParams.field}`;
     }
     
-    const response = await fetch(`http://localhost:9000/api/event?${queryString}`);
+    const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/event?${queryString}`);
     const data = await response.json();
     setEvents(data.events);
     setTotalPages(data.totalPages);
@@ -86,7 +86,7 @@ const EventListPage = () => {
 
   const handleDeleteEvent = async (id) => {
     try {
-      const response = await fetch(`http://localhost:9000/api/event/${id}`, {
+      const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/event/${id}`, {
         method: "DELETE",
       });
 

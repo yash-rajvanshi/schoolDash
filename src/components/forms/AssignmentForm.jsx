@@ -39,8 +39,8 @@ const AssignmentForm = ({ type, data }) => {
   
       const url =
         type === "update"
-          ? `http://localhost:9000/api/assignment/${data?._id}`
-          : "http://localhost:9000/api/assignment";
+          ? `https://backend-dashboard-sy1c.onrender.com/api/assignment/${data?._id}`
+          : "https://backend-dashboard-sy1c.onrender.com/api/assignment";
   
       await fetch(url, {
         method: type === "update" ? "PUT" : "POST",

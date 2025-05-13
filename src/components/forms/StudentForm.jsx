@@ -99,7 +99,7 @@ const StudentForm = ({ type, data }) => {
 
   //     console.log("Final Payload: ", payload);
 
-  //     await fetch("http://localhost:9000/api/student", {
+  //     await fetch("https://backend-dashboard-sy1c.onrender.com/api/student", {
   //       method: "POST",
   //       headers: {
   //         "Content-Type": "application/json",
@@ -126,8 +126,8 @@ const StudentForm = ({ type, data }) => {
   
       const url =
         type === "update"
-          ? `http://localhost:9000/api/student/${data?._id}`
-          : "http://localhost:9000/api/student";
+          ? `https://backend-dashboard-sy1c.onrender.com/api/student/${data?._id}`
+          : "https://backend-dashboard-sy1c.onrender.com/api/student";
   
       await fetch(url, {
         method: type === "update" ? "PUT" : "POST",

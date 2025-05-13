@@ -38,7 +38,7 @@ const EventForm = ({ type, data }) => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const res = await fetch("http://localhost:9000/api/class");
+        const res = await fetch("https://backend-dashboard-sy1c.onrender.com/api/class");
         const json = await res.json();
         console.log("Fetched Classes:", json);
         setClasses(json.classes);
@@ -58,8 +58,8 @@ const EventForm = ({ type, data }) => {
 
       const url =
         type === "update"
-          ? `http://localhost:9000/api/event/${data?._id}`
-          : "http://localhost:9000/api/event";
+          ? `https://backend-dashboard-sy1c.onrender.com/api/event/${data?._id}`
+          : "https://backend-dashboard-sy1c.onrender.com/api/event";
 
       await fetch(url, {
         method: type === "update" ? "PUT" : "POST",

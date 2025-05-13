@@ -11,7 +11,7 @@ import { useAuth } from '@/app/hooks/useAuthHook';
 const fetchExamsFromApi = async (page, limit, setExams, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`http://localhost:9000/api/exam?page=${page}&limit=${limit}`);
+    const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/exam?page=${page}&limit=${limit}`);
     const data = await response.json();
     setExams(data.exams);
     setTotalPages(data.totalPages);
@@ -70,7 +70,7 @@ const ExamListPage = () => {
 
   const handleDeleteExam = async (id) => {
     try {
-      const response = await fetch(`http://localhost:9000/api/exam/${id}`, {
+      const response = await fetch(`https://backend-dashboard-sy1c.onrender.com/api/exam/${id}`, {
         method: "DELETE",
       });
 
