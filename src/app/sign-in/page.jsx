@@ -54,7 +54,7 @@ export default function LoginPage() {
     <motion.div
   className="min-h-screen flex items-center justify-center px-4"
   style={{
-    backgroundImage: 'url(/backg.png)', // Replace with your image path
+    backgroundImage: 'url(/back.jpeg)', // Replace with your image path
     backgroundSize: 'cover', // or 'contain' depending on your needs
     backgroundPosition: 'center', // or any position you prefer
     backgroundRepeat: 'no-repeat',
@@ -65,7 +65,7 @@ export default function LoginPage() {
   transition={{ duration: 1 }}
 >
       <motion.div
-        className="relative bg-white shadow-2xl border border-gray-200 rounded-3xl p-10 w-full max-w-md backdrop-blur-md"
+        className="relative backdrop-blur-xl bg-white/40 shadow-2xl rounded-3xl p-10 w-full max-w-md"
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 60, delay: 0.2 }}
@@ -73,7 +73,7 @@ export default function LoginPage() {
 
         <div className='flex justify-center items-center'>
           <motion.div
-            className="absolute -top-24 transform -translate-x-1/2 bg-white rounded-full p-4"
+            className="absolute -top-24 transform -translate-x-1/2 backdrop-blur-3xl bg-white/50 rounded-full p-4"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.3 }}
