@@ -52,17 +52,18 @@ export default function LoginPage() {
 
   return (
     <motion.div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{
-        background: 'linear-gradient(270deg, #fef9c3, #ffffff, #bae6fd)',
-        backgroundSize: '600% 600%',
-        backgroundPosition: `${bgPosition}% 50%`,
-        transition: 'background-position 0.1s ease'
-      }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1 }}
-    >
+  className="min-h-screen flex items-center justify-center px-4"
+  style={{
+    backgroundImage: 'url(/backg.png)', // Replace with your image path
+    backgroundSize: 'cover', // or 'contain' depending on your needs
+    backgroundPosition: 'center', // or any position you prefer
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed', // optional - makes the background fixed during scroll
+  }}
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 1 }}
+>
       <motion.div
         className="relative bg-white shadow-2xl border border-gray-200 rounded-3xl p-10 w-full max-w-md backdrop-blur-md"
         initial={{ y: 50, opacity: 0 }}
