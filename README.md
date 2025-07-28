@@ -24,7 +24,7 @@ SchoolDash is a modern, responsive school dashboard system built with Next.js. I
 |---------------|-----------------------------------------|
 | Frontend      | Next.js, JavaScript, TailwindCSS        |
 | Backend       | Node.js, Express.js                     |
-| Database      | MongoDB                                 |
+| Database      | MongoDB Atlas                                |
 | Dev & Hosting | Git, Vercel (Frontend), Localhost       |
 
 ---
@@ -45,8 +45,8 @@ The goal of this project is to streamline communication and information access b
 
 ```bash
 # 1. Clone both frontend and backend repositories
-git clone https://github.com/yourusername/schoolDash.git
-git clone https://github.com/yourusername/Backend-Dashboard.git
+git clone https://github.com/yash-rajvanshi/schoolDash.git
+git clone https://github.com/yash-rajvanshi/Backend-Dashboard.git
 
 # 2. Navigate to frontend folder and install dependencies
 cd schoolDash
