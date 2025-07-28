@@ -1,6 +1,7 @@
 # Scholio Management Dashboard
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live-green)](https://scholio.vercel.app/)
+Use Demo Credentials id:student@gmail.com pass:12345
 
 SchoolDash is a modern, responsive school dashboard system built with Next.js. It features a **role-based login system** for students and teachers, offering structured access to academic and institutional information like subjects, events, teachers, and exams.
 
@@ -8,7 +9,7 @@ SchoolDash is a modern, responsive school dashboard system built with Next.js. I
 
 ## ✨ Features
 
-- 🔐 Role-based login system (Student & Teacher)
+- 🔐 Role-based login system (Student, Teacher & Admin)
 - 🧑‍🎓 Lists of students and their assigned teachers
 - 📚 Subjects and who teaches what
 - 📅 Upcoming events and exams
