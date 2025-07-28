@@ -1,4 +1,4 @@
-# Scholio Management Dashboard
+# Scholio - A Management Dashboard
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live-green)](https://scholio.vercel.app/)
 Use Demo Credentials id:student@gmail.com pass:12345
