@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import {
   RadialBarChart,
   RadialBar,
@@ -7,25 +8,53 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+
+
+
+
+
+
+const CountChart = () => {
+  const [val, setVal] = useState([]);
+  useEffect(() => {
+
+    const fetchGenderCount = async () => {
+      try {
+        const response = await fetch("https://backend-dashboard-l273.onrender.com/api/student/genderCount")
+        if (!response.ok) {
+          console.log("Error occurred")
+          return;
+        }
+        const data = await response.json();
+        setVal(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchGenderCount();
+
+
+
+  }, [])
+
 const data = [
   {
     name: "Total",
-    count: 106,
+    count: val.female+val.male,
     fill: "white",
   },
   {
     name: "Girls",
-    count: 53,
+    count: val.female,
     fill: "#FAE27C",
   },
   {
     name: "Boys",
-    count: 53,
+    count: val.male,
     fill: "#C3EBFA",
   },
 ];
-
-const CountChart = () => {
   return (
     <div className="bg-white rounded-xl w-full h-full p-4">
       {/* TITLE */}
@@ -59,12 +88,12 @@ const CountChart = () => {
       <div className="flex justify-center gap-16">
         <div className="flex flex-col gap-1">
           <div className="w-5 h-5 bg-lamaSky rounded-full" />
-          <h1 className="font-bold">1,234</h1>
+          <h1 className="font-bold">{val.male}</h1>
           <h2 className="text-xs text-gray-300">Boys (55%)</h2>
         </div>
         <div className="flex flex-col gap-1">
           <div className="w-5 h-5 bg-lamaYellow rounded-full" />
-          <h1 className="font-bold">1,234</h1>
+          <h1 className="font-bold">{val.female}</h1>
           <h2 className="text-xs text-gray-300">Girls (45%)</h2>
         </div>
       </div>

@@ -72,7 +72,7 @@ const TeacherForm = ({ type, data }) => {
       
       // Store initial subjects for later comparison during updates
       const subjectIds = Array.isArray(data?.subjects) 
-        ? data.subjects.map(subj => typeof subj === 'object' && subj._id ? subj._id : subj)
+        ? data.subjects.map(subj => typeof subj === 'object' && subj?._id ? subj?._id : subj)
         : data?.subjects?.split(',').map(s => s.trim()) || [];
       
       setInitialSubjects(subjectIds);
@@ -92,10 +92,10 @@ const TeacherForm = ({ type, data }) => {
     defaultValues: {
       ...data,
       // Fix: Check if classes are objects (with _id property) or just strings
-      classes: data?.classes?.map(cls => typeof cls === 'object' && cls._id ? cls._id : cls) || [],
+      classes: data?.classes?.map(cls => typeof cls === 'object' && cls?._id ? cls?._id : cls) || [],
       // Convert subjects from array or comma-separated string to array
       subjects: Array.isArray(data?.subjects) 
-        ? (data.subjects.map(subj => typeof subj === 'object' && subj._id ? subj._id : subj))
+        ? (data.subjects.map(subj => typeof subj === 'object' && subj?._id ? subj?._id : subj))
         : data?.subjects?.split(',').map(s => s.trim()) || [],
     },
   });
@@ -210,8 +210,8 @@ const TeacherForm = ({ type, data }) => {
   const getSubjectName = (subjectId) => {
     let subject = subjects.find(s => s._id === subjectId);
     
-    if (!subject && typeof subjectId === 'object' && subjectId._id) {
-      subject = subjects.find(s => s._id === subjectId._id);
+    if (!subject && typeof subjectId === 'object' && subjectId?._id) {
+      subject = subjects.find(s => s._id === subjectId?._id);
     }
     
     if (!subject && subjects.length > 0) {

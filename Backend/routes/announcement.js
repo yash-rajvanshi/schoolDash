@@ -59,7 +59,7 @@ router.post("/multiple", async (req, res) => {
   }
 });
 
-// 📌 Get all Announcements
+// Get all Announcements
 router.get("/", async (req, res) => {
   try {
     const announcements = await Announcement.find().populate("classId");
@@ -69,7 +69,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 📌 Get a single Announcement by ID
+// Get a single Announcement by ID
 router.get("/:id", async (req, res) => {
   try {
     const announcement = await Announcement.findById(req.params.id).populate("classId"); //populated classID
@@ -80,7 +80,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// 📌 Update an Announcement by ID
+// Update an Announcement by ID
 router.put("/:id", async (req, res) => {
   try {
     const updatedAnnouncement = await Announcement.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -91,7 +91,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// 📌 Delete an Announcement by ID
+// Delete an Announcement by ID
 router.delete("/:id", async (req, res) => {
   try {
     const deletedAnnouncement = await Announcement.findByIdAndDelete(req.params.id);

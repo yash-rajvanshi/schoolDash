@@ -8,7 +8,6 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 
-// This function doesn't use hooks, so it can stay outside the component
 const fetchSubjectsFromApi = async (page, limit, setSubjects, setTotalPages, setLoading) => {
   try {
     setLoading(true);
@@ -41,7 +40,6 @@ const SubjectListPage = () => {
         setTeachersLoading(true);
         const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
         const data = await res.json();
-        // Make sure we're setting an array
         setTeachers(Array.isArray(data) ? data : (data.teachers || []));
       } catch (error) {
         console.error("Failed to fetch teachers", error);

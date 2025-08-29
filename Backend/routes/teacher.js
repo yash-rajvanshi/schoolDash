@@ -67,17 +67,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// // Create Teacher
-// router.post("/", async (req, res) => {
-//   try {
-//     const newTeacher = new Teacher(req.body);
-//     await newTeacher.save();
-//     res.status(201).json(newTeacher);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
-
 // Create multiple teachers
 router.post("/multiple", async (req, res) => {
   try {
@@ -123,6 +112,17 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+router.get("/countTeachers",async(req,res)=>{
+  try {
+    const countTeachers = await Teacher.find().countDocuments();
+    res.status(200).json({count:countTeachers});
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error."})
+    
+  }
+})
 
 // Get Teacher by ID
 router.get("/:id", async (req, res) => {

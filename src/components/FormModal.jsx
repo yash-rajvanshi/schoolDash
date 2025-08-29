@@ -98,7 +98,7 @@ const FormModal = ({ table, type, data, id, onSuccess, handleDelete }) => {
         </button>
       </form>
     ) : type === "create" || type === "update" ? (
-      forms[table](type, data, onSuccess)
+      forms[table](type,  data ?? {}, onSuccess)
     ) : (
       "Form not found!"
     );

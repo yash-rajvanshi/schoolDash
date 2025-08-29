@@ -68,15 +68,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// // 📌 Get all students
-// router.get("/", async (req, res) => {
-//   try {
-//     const students = await Student.find();
-//     res.status(200).json(students);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+
 // 📌 Get all students with pagination
 router.get("/", async (req, res) => {
   try {
@@ -99,6 +91,30 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+//count students
+
+router.get("/countStudent",async(req,res)=>{
+  try {
+    const countStudent = await Student.find().countDocuments();
+    res.status(200).json(({count:countStudent}));
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error."})
+    
+  }
+})
+
+router.get("/genderCount", async(req, res)=>{
+  try {
+    const genderCountFemale = await Student.find({sex:"female"}).countDocuments();
+    const genderCountMale = await Student.find({sex:"male"}).countDocuments();
+    res.status(200).json({female:genderCountFemale,male:genderCountMale})
+    
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error."})
+    
+  }
+})
 
 // 📌 Get a single student by ID
 router.get("/:id", async (req, res) => {

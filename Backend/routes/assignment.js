@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Assignment = require("../models/assignment");
 
-// 📌 Create a new Assignment
+// Create a new Assignment
 router.post("/", async (req, res) => {
   try {
     const newAssignment = new Assignment(req.body);
@@ -13,15 +13,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 📌 Get all Assignments
-// router.get("/", async (req, res) => {
-//   try {
-//     const assignments = await Assignment.find().populate("lessonId");
-//     res.status(200).json(assignments);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 // 📌 Get all Assignments with pagination
 router.get("/", async (req, res) => {
