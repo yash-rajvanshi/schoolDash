@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useEffect ,useState} from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const UserCard = ({ type }) => {
   const [count, setCount] = useState(0);

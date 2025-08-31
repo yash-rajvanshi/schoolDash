@@ -40,7 +40,8 @@ app.use(cors({
   origin: [
     'http://localhost:3001', 
     'https://scholio-yash-rajvanshis-projects.vercel.app',
-    'https://scholio.vercel.app'
+    'https://scholio.vercel.app',
+    // 'https://backend-dashboard-l273.onrender.com'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
