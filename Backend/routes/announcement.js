@@ -96,15 +96,15 @@ router.post("/multiple", async (req, res) => {
   }
 });
 
-// Get all Announcements
-router.get("/", async (req, res) => {
-  try {
-    const announcements = await Announcement.find().populate("classId");
-    res.status(200).json(announcements);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// // Get all Announcements
+// router.get("/", async (req, res) => {
+//   try {
+//     const announcements = await Announcement.find().populate("classId");
+//     res.status(200).json(announcements);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 // Get a single Announcement by ID
 router.get("/:id", async (req, res) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 const AnnouncementsT = () => {
   const [announcements, setAnnouncements] = useState([]);
@@ -12,7 +13,7 @@ const AnnouncementsT = () => {
 
   const fetchAnnouncements = async () => {
     try {
-      const response = await fetch('https://backend-dashboard-l273.onrender.com/api/announcement?limit=5');
+      const response = await fetch(`${API_BASE_URL}/api/announcement?limit=5`);
       const data = await response.json();
       if (data.announcements) {
         setAnnouncements(data.announcements);
