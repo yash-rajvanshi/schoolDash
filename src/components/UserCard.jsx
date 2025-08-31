@@ -4,7 +4,7 @@ import { useEffect ,useState} from "react";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const UserCard = ({ type }) => {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState("loading..");
 
 useEffect(() => {
   const fetchCount = async () => {
