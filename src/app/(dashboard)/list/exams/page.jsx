@@ -8,10 +8,12 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const fetchExamsFromApi = async (page, limit, setExams, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/exam?page=${page}&limit=${limit}`);
+    const response = await fetch(`${API_BASE_URL}/api/exam?page=${page}&limit=${limit}`);
     const data = await response.json();
     setExams(data.exams);
     setTotalPages(data.totalPages);
@@ -24,16 +26,20 @@ const fetchExamsFromApi = async (page, limit, setExams, setTotalPages, setLoadin
 
 const columns = [
   {
-    header: "Subject Name",
-    accessor: "name",
+    header: "Title",
+    accessor: "title",
+  },
+  {
+    header: "Subject",
+    accessor: "subjectId.name",
   },
   {
     header: "Class",
-    accessor: "class",
+    accessor: "classId.name",
   },
   {
     header: "Teacher",
-    accessor: "teacher",
+    accessor: "teacherId",
     className: "hidden md:table-cell",
   },
   {
@@ -70,7 +76,7 @@ const ExamListPage = () => {
 
   const handleDeleteExam = async (id) => {
     try {
-      const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/exam/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/exam/${id}`, {
         method: "DELETE",
       });
 
@@ -87,18 +93,29 @@ const ExamListPage = () => {
     }
   };
 
+  // Add this function to handle any form success (create/update)
+  const handleFormSuccess = () => {
+    // Re-fetch data after successful create/update
+    fetchExamsFromApi(page, limit, setExams, setTotalPages, setLoading);
+  };
+
   const renderRow = (item) => (
     <tr key={item._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
-      <td className="p-4">{item.subject}</td>
-      <td>{item.class}</td>
-      <td className="hidden md:table-cell">{item.teacher}</td>
+      <td className="p-4">{item.title}</td>
+      <td>{item.subjectId?.name || 'N/A'}</td>
+      <td>{item.classId?.name || 'N/A'}</td>
+      <td className="hidden md:table-cell">
+        {item.teacherId?.firstName && item.teacherId?.lastName 
+          ? `${item.teacherId.firstName} ${item.teacherId.lastName}` 
+          : 'N/A'}
+      </td>
       <td className="hidden md:table-cell">{new Date(item.date).toLocaleDateString()}</td>
       <td>
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher" ) && (
             <>
-              <FormModal table="exam" type="update" data={item} />
-              <FormModal table="exam" type="delete" id={item._id} handleDelete={() => handleDeleteExam(item._id)} />
+              <FormModal table="exam" type="update" data={item} onSuccess={handleFormSuccess} />
+              <FormModal table="exam" type="delete" id={item._id} handleDelete={() => handleDeleteExam(item._id)} onSuccess={handleFormSuccess} />
             </>
           )}
         </div>
@@ -129,7 +146,7 @@ const ExamListPage = () => {
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
             {(role === "admin" || role === "teacher") && (
-              <FormModal table="exam" type="create" />
+              <FormModal table="exam" type="create" onSuccess={handleFormSuccess} />
             )}
           </div>
         </div>

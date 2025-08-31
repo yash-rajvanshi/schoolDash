@@ -5,23 +5,60 @@ const Announcement = require("../models/announcement");
 // 📌 Create a new Announcement
 router.post("/", async (req, res) => {
   try {
-    const newAnnouncement = new Announcement(req.body);
+    console.log('Received announcement data:', req.body);
+    
+    // Create announcement data, making authorId completely optional
+    const announcementData = {
+      title: req.body.title,
+      content: req.body.content,
+      classes: req.body.classes,
+      date: req.body.date || new Date(),
+      priority: req.body.priority || 'medium',
+      isActive: true
+    };
+
+    // Only add authorId if it's a valid ObjectId
+    if (req.body.authorId && req.body.authorId.trim() !== '') {
+      announcementData.authorId = req.body.authorId;
+    }
+
+    console.log('Processed announcement data:', announcementData);
+
+    const newAnnouncement = new Announcement(announcementData);
     await newAnnouncement.save();
     res.status(201).json({ message: "Announcement created successfully!", announcement: newAnnouncement });
   } catch (error) {
+    console.error('Announcement creation error:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
-// 📌 Get all Announcements with pagination
+// 📌 Get all Announcements with pagination and filtering
 router.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;      // default to page 1
     const limit = parseInt(req.query.limit) || 10;   // default to 10 Announcements per page
     const skip = (page - 1) * limit;
+    
+    // Build query based on filters
+    const query = { isActive: true };
+    
+    // Add priority filter if provided
+    if (req.query.priority) {
+      query.priority = req.query.priority;
+    }
+    
+    // Add class filter if provided
+    if (req.query.class) {
+      query.classes = req.query.class;
+    }
 
-    const totalAnnouncements = await Announcement.countDocuments();           // total Announcement count
-    const announcements = await Announcement.find().skip(skip).limit(limit);  // paginated query
+    const totalAnnouncements = await Announcement.countDocuments(query);
+    const announcements = await Announcement.find(query)
+      .sort({ date: -1, priority: -1 }) // Sort by date (newest first) and priority
+      .skip(skip)
+      .limit(limit)
+      .populate("authorId", "name email"); // Populate author information
 
     const totalPages = Math.ceil(totalAnnouncements / limit);
 

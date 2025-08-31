@@ -7,14 +7,21 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import InputField from "../InputField";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const schema = z.object({
-  subject: z.string().min(1, { message: "Subject name is required!" }),
-  class: z.string().min(1, { message: "Class name is required!" }),
-  teacher: z.string().min(1, { message: "Teacher's name is required!" }),
+  title: z.string().min(3, { message: "Title must be at least 3 characters!" }).max(100, { message: "Title cannot exceed 100 characters!" }),
+  subjectId: z.string().min(1, { message: "Subject is required!" }),
+  classId: z.string().min(1, { message: "Class is required!" }),
+  teacherId: z.string().min(1, { message: "Teacher is required!" }),
   date: z.string().min(1, { message: "Exam Date is required!" }),
+  startTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Please enter a valid time in HH:MM format" }),
+  duration: z.number().min(15, { message: "Duration must be at least 15 minutes" }).max(300, { message: "Duration cannot exceed 300 minutes" }),
+  maxScore: z.number().min(1, { message: "Max score must be at least 1" }).max(1000, { message: "Max score cannot exceed 1000" }),
+  description: z.string().max(500, { message: "Description cannot exceed 500 characters" }).optional(),
 });
 
-const EForm = ({ type, data }) => {
+const ExamForm = ({ type, data, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   const [subjects, setSubjects] = useState([]);
   const [classes, setClasses] = useState([]);
@@ -40,20 +47,34 @@ const EForm = ({ type, data }) => {
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      ...data,
+      title: data?.title || "",
+      subjectId: data?.subjectId || "",
+      classId: data?.classId || "",
+      teacherId: data?.teacherId || "",
+      date: data?.date ? new Date(data.date).toISOString().split('T')[0] : "",
+      startTime: data?.startTime || "09:00",
+      duration: data?.duration || 60,
+      maxScore: data?.maxScore || 100,
+      description: data?.description || "",
     },
   });
   
   // Watch values to display selected items
-  const selectedSubject = watch("subject") || "";
-  const selectedClass = watch("class") || "";
-  const selectedTeacher = watch("teacher") || "";
+  const selectedSubjectId = watch("subjectId") || "";
+  const selectedClassId = watch("classId") || "";
+  const selectedTeacherId = watch("teacherId") || "";
+
+  // Get display names for selected IDs
+  const selectedSubject = subjects.find(s => s._id === selectedSubjectId)?.name || "";
+  const selectedClass = classes.find(c => c._id === selectedClassId)?.name || "";
+  const selectedTeacher = teachers.find(t => t._id === selectedTeacherId) ? 
+    `${teachers.find(t => t._id === selectedTeacherId).firstName} ${teachers.find(t => t._id === selectedTeacherId).lastName}` : "";
 
   // Fetch subjects, classes, and teachers on mount
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/subject");
+        const res = await fetch(`${API_BASE_URL}/api/subject`);
         const json = await res.json();
         console.log("Fetched Subjects:", json);
         setSubjects(json.subjects || []);
@@ -64,7 +85,7 @@ const EForm = ({ type, data }) => {
     
     const fetchClasses = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/class");
+        const res = await fetch(`${API_BASE_URL}/api/class`);
         const json = await res.json();
         console.log("Fetched Classes:", json);
         setClasses(json.classes || []);
@@ -75,7 +96,7 @@ const EForm = ({ type, data }) => {
     
     const fetchTeachers = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
+        const res = await fetch(`${API_BASE_URL}/api/teacher`);
         const json = await res.json();
         console.log("Fetched Teachers:", json);
         setTeachers(json.teachers || []);
@@ -119,14 +140,15 @@ const EForm = ({ type, data }) => {
     try {
       const payload = {
         ...values,
+        isActive: true
       };
   
       console.log("Final Payload: ", payload);
   
       const url =
         type === "update"
-          ? `https://backend-dashboard-l273.onrender.com/api/exam/${data?._id}`
-          : "https://backend-dashboard-l273.onrender.com/api/exam";
+          ? `${API_BASE_URL}/api/exam/${data?._id}`
+          : `${API_BASE_URL}/api/exam`;
   
       const response = await fetch(url, {
         method: type === "update" ? "PUT" : "POST",
@@ -136,14 +158,22 @@ const EForm = ({ type, data }) => {
         body: JSON.stringify(payload),
       });
       
-      const result = await response.json();
-      console.log("Exam saved:", result);
-      
-      if (type !== "update") reset();
-      // alert(`Exam ${type === "update" ? "updated" : "created"} successfully!`);
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Exam saved:", result);
+        
+        if (onSuccess) {
+          onSuccess(result);
+        }
+        if (type !== "update") reset();
+        alert(`Exam ${type === "update" ? "updated" : "created"} successfully!`);
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error || 'Failed to save exam'}`);
+      }
     } catch (error) {
       console.error("Error submitting form", error);
-      alert("Error saving exam. Please check the console for details.");
+      alert('Network error occurred. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -157,6 +187,61 @@ const EForm = ({ type, data }) => {
       <span className="text-xs text-gray-400 font-medium">
         Exam Information
       </span>
+      
+      <div className="flex justify-between flex-wrap gap-4">
+        <InputField
+          label="Exam Title"
+          name="title"
+          defaultValue={data?.title}
+          register={register}
+          error={errors.title}
+          type="text"
+          placeholder="Enter exam title"
+        />
+        
+        <InputField
+          label="Exam Date"
+          name="date"
+          defaultValue={data?.date ? new Date(data.date).toISOString().split('T')[0] : ""}
+          register={register}
+          error={errors.date}
+          type="date"
+        />
+      </div>
+
+      <div className="flex justify-between flex-wrap gap-4">
+        <InputField
+          label="Start Time"
+          name="startTime"
+          defaultValue={data?.startTime || "09:00"}
+          register={register}
+          error={errors.startTime}
+          type="time"
+        />
+        
+        <InputField
+          label="Duration (minutes)"
+          name="duration"
+          defaultValue={data?.duration || 60}
+          register={register}
+          error={errors.duration}
+          type="number"
+          min="15"
+          max="300"
+        />
+        
+        <InputField
+          label="Max Score"
+          name="maxScore"
+          defaultValue={data?.maxScore || 100}
+          register={register}
+          error={errors.maxScore}
+          type="number"
+          min="1"
+          max="1000"
+        />
+      </div>
+
       <div className="flex justify-between flex-wrap gap-4">
         {/* Subject Dropdown */}
         <div className="flex flex-col w-[48%] relative" ref={subjectDropdownRef}>
@@ -180,10 +265,10 @@ const EForm = ({ type, data }) => {
                 <div
                   key={subject._id}
                   className={`p-2 hover:bg-gray-100 cursor-pointer ${
-                    selectedSubject === subject.name ? "bg-blue-50" : ""
+                    selectedSubjectId === subject._id ? "bg-blue-50" : ""
                   }`}
                   onClick={() => {
-                    setValue("subject", subject.name);
+                    setValue("subjectId", subject._id);
                     setSubjectDropdownOpen(false);
                   }}
                 >
@@ -196,14 +281,14 @@ const EForm = ({ type, data }) => {
           {/* Hidden input for form validation */}
           <input 
             type="hidden" 
-            name="subject" 
-            value={selectedSubject} 
-            {...register("subject")} 
+            name="subjectId" 
+            value={selectedSubjectId} 
+            {...register("subjectId")} 
           />
           
-          {errors?.subject && (
+          {errors?.subjectId && (
             <p className="text-red-500 text-xs mt-1">
-              {errors.subject.message}
+              {errors.subjectId.message}
             </p>
           )}
         </div>
@@ -230,10 +315,10 @@ const EForm = ({ type, data }) => {
                 <div
                   key={cls._id}
                   className={`p-2 hover:bg-gray-100 cursor-pointer ${
-                    selectedClass === cls.name ? "bg-blue-50" : ""
+                    selectedClassId === cls._id ? "bg-blue-50" : ""
                   }`}
                   onClick={() => {
-                    setValue("class", cls.name);
+                    setValue("classId", cls._id);
                     setClassDropdownOpen(false);
                   }}
                 >
@@ -246,27 +331,20 @@ const EForm = ({ type, data }) => {
           {/* Hidden input for form validation */}
           <input 
             type="hidden" 
-            name="class" 
-            value={selectedClass} 
-            {...register("class")} 
+            name="classId" 
+            value={selectedClassId} 
+            {...register("classId")} 
           />
           
-          {errors?.class && (
+          {errors?.classId && (
             <p className="text-red-500 text-xs mt-1">
-              {errors.class.message}
+              {errors.classId.message}
             </p>
           )}
         </div>
-        
-        <InputField
-          label="Exam Date"
-          name="date"
-          defaultValue={data?.date}
-          register={register}
-          error={errors.date}
-          type="date"
-        />
-        
+      </div>
+
+      <div className="flex justify-between flex-wrap gap-4">
         {/* Teacher Dropdown */}
         <div className="flex flex-col w-[48%] relative" ref={teacherDropdownRef}>
           <label className="font-medium text-sm text-gray-700 mb-1">
@@ -289,10 +367,10 @@ const EForm = ({ type, data }) => {
                 <div
                   key={teacher._id}
                   className={`p-2 hover:bg-gray-100 cursor-pointer ${
-                    selectedTeacher === `${teacher.firstName} ${teacher.lastName}` ? "bg-blue-50" : ""
+                    selectedTeacherId === teacher._id ? "bg-blue-50" : ""
                   }`}
                   onClick={() => {
-                    setValue("teacher", `${teacher.firstName} ${teacher.lastName}`);
+                    setValue("teacherId", teacher._id);
                     setTeacherDropdownOpen(false);
                   }}
                 >
@@ -305,17 +383,29 @@ const EForm = ({ type, data }) => {
           {/* Hidden input for form validation */}
           <input 
             type="hidden" 
-            name="teacher" 
-            value={selectedTeacher} 
-            {...register("teacher")} 
+            name="teacherId" 
+            value={selectedTeacherId} 
+            {...register("teacherId")} 
           />
           
-          {errors?.teacher && (
+          {errors?.teacherId && (
             <p className="text-red-500 text-xs mt-1">
-              {errors.teacher.message}
+              {errors.teacherId.message}
             </p>
           )}
         </div>
+      </div>
+
+      <div className="flex justify-between flex-wrap gap-4">
+        <InputField
+          label="Description (Optional)"
+          name="description"
+          defaultValue={data?.description}
+          register={register}
+          error={errors.description}
+          type="textarea"
+          placeholder="Enter exam description"
+        />
       </div>
 
       <button
@@ -325,12 +415,12 @@ const EForm = ({ type, data }) => {
       >
         {submitting
           ? "Submitting..."
-          : type === "create"
-          ? "Create"
-          : "Update"}
+          : type === "update"
+          ? "Update"
+          : "Create"}
       </button>
     </form>
   );
 };
 
-export default EForm;
+export default ExamForm;

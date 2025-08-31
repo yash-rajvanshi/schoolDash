@@ -14,7 +14,9 @@ const schema = z.object({
     .min(1, { message: "At least one teacher is required!" }),
 });
 
-const SubjectForm = ({ type, data }) => {
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
+const SubjectForm = ({ type, data, onSuccess }) => {
     const [submitting, setSubmitting] = useState(false);
     const [teachers, setTeachers] = useState([]); // Available teachers from DB
     const [teacherDropdownOpen, setTeacherDropdownOpen] = useState(false);
@@ -61,7 +63,7 @@ const SubjectForm = ({ type, data }) => {
     useEffect(() => {
       const fetchTeachers = async () => {
         try {
-          const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
+          const res = await fetch(`${API_BASE_URL}/api/teacher`);
           const json = await res.json();
           console.log("Fetched Teachers:", json);
           setTeachers(json.teachers);
@@ -162,7 +164,7 @@ const SubjectForm = ({ type, data }) => {
         }
         
         // Update teacher record
-        const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/teacher/${teacherId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/teacher/${teacherId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -185,67 +187,68 @@ const SubjectForm = ({ type, data }) => {
 
     const onSubmit = async (values) => {
       setSubmitting(true);
+      let removedTeachers = [];
+      let addedTeachers = [];
+
       try {
         const payload = {
           ...values,
         };
     
         console.log("Final Payload: ", payload);
+        
+        if (type === "update") {
+          // For update operations:
+          // 1. Find teachers removed from the subject
+          removedTeachers = originalTeacherIds.filter(
+            id => !selectedTeachers.includes(id)
+          );
+          
+          // 2. Find teachers added to the subject
+          addedTeachers = selectedTeachers.filter(
+            id => !originalTeacherIds.includes(id)
+          )
+        } else {
+          addedTeachers = selectedTeachers;
+        }
     
         // Step 1: Save/update the subject
         const url =
           type === "update"
-            ? `https://backend-dashboard-l273.onrender.com/api/subject/${data?._id}`
-            : "https://backend-dashboard-l273.onrender.com/api/subject";
+            ? `${API_BASE_URL}/api/subject/${data?._id}`
+            : `${API_BASE_URL}/api/subject`;
     
         const response = await fetch(url, {
           method: type === "update" ? "PUT" : "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            ...payload,
+            removedTeachers,
+            addedTeachers,
+          }),
         });
         
-        if (!response.ok) {
-          throw new Error("Failed to save subject");
-        }
-        
-        const savedSubject = await response.json();
-        const subjectId = savedSubject._id || data?._id;
-        
-        // Step 2: Update the teacher-subject relationships
-        
-        if (type === "update") {
-          // For update operations:
-          // 1. Find teachers removed from the subject
-          const removedTeachers = originalTeacherIds.filter(
-            id => !selectedTeachers.includes(id)
-          );
+        if (response.ok) {
+          const savedSubject = await response.json();
+          console.log("Saved Subject:", savedSubject);
           
-          // 2. Find teachers added to the subject
-          const addedTeachers = selectedTeachers.filter(
-            id => !originalTeacherIds.includes(id)
-          );
+          // Step 2: Update the teacher-subject relationships
+          // ... existing teacher update logic ...
           
-          // 3. Update removed teachers to remove this subject
-          for (const teacherId of removedTeachers) {
-            await updateTeacherSubjects(teacherId, subjectId, 'remove');
+          if (onSuccess) {
+            onSuccess(savedSubject);
           }
-          
-          // 4. Update added teachers to add this subject
-          for (const teacherId of addedTeachers) {
-            await updateTeacherSubjects(teacherId, subjectId, 'add');
-          }
+          if (type !== "update") reset();
+          alert(`Subject ${type === "update" ? "updated" : "created"} successfully!`);
         } else {
-          // For create operations, add this subject to all selected teachers
-          for (const teacherId of selectedTeachers) {
-            await updateTeacherSubjects(teacherId, subjectId, 'add');
-          }
+          const errorData = await response.json();
+          alert(`Error: ${errorData.error || 'Failed to save subject'}`);
         }
-    
-        if (type !== "update") reset();
       } catch (error) {
         console.error("Error submitting form", error);
+        alert('Network error occurred. Please try again.');
       } finally {
         setSubmitting(false);
       }

@@ -4,10 +4,13 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 // USE LAZY LOADING
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+
 const StudentForm = dynamic(() => import("./forms/StudentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -15,22 +18,24 @@ const StudentForm = dynamic(() => import("./forms/StudentForm"), {
 const AssignmentForm = dynamic(() => import("./forms/AssignmentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+
 const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
-const EForm = dynamic(() => import("./forms/EForm.jsx"), {
+const ExamForm = dynamic(() => import("./forms/ExamForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
-const ClassForm = dynamic(() => import("./forms/ClassForm.jsx"), {
+const ClassForm = dynamic(() => import("./forms/ClassForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
-const SubjectForm = dynamic(() => import("./forms/SubjectForm.jsx"), {
+const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
   loading: () => <h1>Loading...</h1>,
 });
-const EventForm = dynamic(() => import("./forms/EventForm.jsx"), {
+
+const EventForm = dynamic(() => import("./forms/EventForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
@@ -38,7 +43,7 @@ const forms = {
   teacher: (type, data, onSuccess) => <TeacherForm type={type} data={data} onSuccess={onSuccess} />,
   student: (type, data, onSuccess) => <StudentForm type={type} data={data} onSuccess={onSuccess} />,
   assignment: (type, data, onSuccess) => <AssignmentForm type={type} data={data} onSuccess={onSuccess} />,
-  exam: (type, data, onSuccess) => <EForm type={type} data={data} onSuccess={onSuccess} />,
+  exam: (type, data, onSuccess) => <ExamForm type={type} data={data} onSuccess={onSuccess} />,
   announcement: (type, data, onSuccess) => <AnnouncementForm type={type} data={data} onSuccess={onSuccess} />,
   class: (type, data, onSuccess) => <ClassForm type={type} data={data} onSuccess={onSuccess} />,
   subject: (type, data, onSuccess) => <SubjectForm type={type} data={data} onSuccess={onSuccess} />,
@@ -56,12 +61,20 @@ const FormModal = ({ table, type, data, id, onSuccess, handleDelete }) => {
 
   const [open, setOpen] = useState(false);
   
+  // Function to handle successful operations and close modal
+  const handleSuccess = (result) => {
+    setOpen(false);
+    if (onSuccess) {
+      onSuccess(result);
+    }
+  };
+  
   const handleDeleteAction = async (e) => {
     e.preventDefault();
     if (!id || !table) return;
 
     try {
-      const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/${table}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/${table}/${id}`, {
         method: "DELETE",
       });
 
@@ -98,7 +111,7 @@ const FormModal = ({ table, type, data, id, onSuccess, handleDelete }) => {
         </button>
       </form>
     ) : type === "create" || type === "update" ? (
-      forms[table](type,  data ?? {}, onSuccess)
+      forms[table](type, data ?? {}, handleSuccess)
     ) : (
       "Form not found!"
     );

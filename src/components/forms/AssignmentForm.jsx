@@ -7,15 +7,17 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import InputField from "../InputField";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const schema = z.object({
-  subject: z.string().min(1, { message: "Subject name is required!" }),
-  class: z.string().min(1, { message: "Class name is required!" }),
-  teacher: z.string().min(1, { message: "Teacher's name is required!" }),
-  dueDate: z.string().min(1, { message: "Due Date is required!" }),
+  subject: z.string().min(1, { message: "Subject is required!" }),
+  class: z.string().min(1, { message: "Class is required!" }),
+  dueDate: z.string().min(1, { message: "Due date is required!" }),
+  teacher: z.string().min(1, { message: "Teacher is required!" }),
 });
 
-const AssignmentForm = ({ type, data }) => {
-    const [submitting, setSubmitting] = useState(false);
+const AssignmentForm = ({ type, data, onSuccess }) => {
+  const [submitting, setSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -39,20 +41,31 @@ const AssignmentForm = ({ type, data }) => {
   
       const url =
         type === "update"
-          ? `https://backend-dashboard-l273.onrender.com/api/assignment/${data?._id}`
-          : "https://backend-dashboard-l273.onrender.com/api/assignment";
+          ? `${API_BASE_URL}/api/assignment/${data?._id}`
+          : `${API_BASE_URL}/api/assignment`;
   
-      await fetch(url, {
+      const response = await fetch(url, {
         method: type === "update" ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-  
-      if (type !== "update") reset();
+
+      if (response.ok) {
+        const result = await response.json();
+        if (onSuccess) {
+          onSuccess(result);
+        }
+        if (type !== "update") reset();
+        alert(`Assignment ${type === "update" ? "updated" : "created"} successfully!`);
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error || 'Failed to save assignment'}`);
+      }
     } catch (error) {
       console.error("Error submitting form", error);
+      alert('Network error occurred. Please try again.');
     } finally {
         setSubmitting(false); // ✅ end submitting
     }

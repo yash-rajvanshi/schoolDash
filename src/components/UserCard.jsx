@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { useEffect ,useState} from "react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const UserCard = ({ type }) => {
   const [count, setCount] = useState(0);
 
@@ -9,8 +11,8 @@ useEffect(() => {
     try {
       const endpoint =
         type == "student"
-          ? "https://backend-dashboard-l273.onrender.com/api/student/countStudent"
-          : "https://backend-dashboard-l273.onrender.com/api/teacher/countTeachers";
+          ? `${API_BASE_URL}/api/student/countStudent`
+          : `${API_BASE_URL}/api/teacher/countTeachers`;
 
       const response = await fetch(endpoint);
       if (!response.ok) throw new Error("Failed to fetch count");

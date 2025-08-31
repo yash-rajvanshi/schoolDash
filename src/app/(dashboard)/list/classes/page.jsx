@@ -8,11 +8,13 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 // This function doesn't use hooks, so it can stay outside the component
 const fetchClasssFromApi = async (page, limit, setClasss, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/class?page=${page}&limit=${limit}`);
+    const response = await fetch(`${API_BASE_URL}/api/class?page=${page}&limit=${limit}`);
     const data = await response.json();
     setClasss(data.classes);
     setTotalPages(data.totalPages);
@@ -39,7 +41,7 @@ const ClassListPage = () => {
     const fetchTeachers = async () => {
       try {
         setTeachersLoading(true);
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
+        const res = await fetch(`${API_BASE_URL}/api/teacher`);
         const data = await res.json();
         // Make sure we're setting an array
         setTeachers(Array.isArray(data) ? data : (data.teachers || []));
@@ -77,7 +79,7 @@ const ClassListPage = () => {
 
   const handleDeleteClass = async (id) => {
     try {
-      const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/class/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/class/${id}`, {
         method: "DELETE",
       });
 
@@ -92,6 +94,12 @@ const ClassListPage = () => {
       console.error("Error deleting Class:", error);
       alert("An error occurred while deleting the Class.");
     }
+  };
+
+  // Add this function to handle any form success (create/update)
+  const handleFormSuccess = () => {
+    // Re-fetch data after successful create/update
+    fetchClassesFromApi(page, limit, setClasses, setTotalPages, setLoading);
   };
 
   const columns = [
@@ -132,8 +140,8 @@ const ClassListPage = () => {
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher") && (
             <>
-              <FormModal table="class" type="update" data={item} />
-              <FormModal table="class" type="delete" id={item._id} handleDelete={() => handleDeleteClass(item._id)} />
+              <FormModal table="class" type="update" data={item} onSuccess={handleFormSuccess} />
+              <FormModal table="class" type="delete" id={item._id} handleDelete={() => handleDeleteClass(item._id)} onSuccess={handleFormSuccess} />
             </>
           )}
         </div>
@@ -164,7 +172,7 @@ const ClassListPage = () => {
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
             {(role === "admin" || role === "teacher") && (
-              <FormModal table="class" type="create" />
+              <FormModal table="class" type="create" onSuccess={handleFormSuccess} />
             )}
           </div>
         </div>

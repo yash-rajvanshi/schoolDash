@@ -21,7 +21,12 @@ router.get("/", async (req, res) => {
     const skip = (page - 1) * limit;
 
     const totalExams = await Exam.countDocuments();           // total Exam count
-    const exams = await Exam.find().skip(skip).limit(limit);  // paginated query
+    const exams = await Exam.find()
+      .populate('subjectId', 'name')
+      .populate('classId', 'name')
+      .populate('teacherId', 'firstName lastName')
+      .skip(skip)
+      .limit(limit);  // paginated query
 
     const totalPages = Math.ceil(totalExams / limit);
 
@@ -62,7 +67,10 @@ router.post("/multiple", async (req, res) => {
 // 📌 Get a single Exam by ID
 router.get("/:id", async (req, res) => {
   try {
-    const exam = await Exam.findById(req.params.id).populate("lessonId");
+    const exam = await Exam.findById(req.params.id)
+      .populate('subjectId', 'name')
+      .populate('classId', 'name')
+      .populate('teacherId', 'firstName lastName');
     if (!exam) return res.status(404).json({ error: "Exam not found" });
     res.status(200).json(exam);
   } catch (error) {

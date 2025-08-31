@@ -10,10 +10,12 @@ import Link from "next/link";
 import { useAuth } from '@/app/hooks/useAuthHook';
 import { PropagateLoader, SyncLoader } from "react-spinners";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+
 const fetchTeachersFromApi = async (page, limit, setTeachers, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/teacher?page=${page}&limit=${limit}`);
+    const response = await fetch(`${API_BASE_URL}/api/teacher?page=${page}&limit=${limit}`);
     const data = await response.json();
     setTeachers(data.teachers);
     setTotalPages(data.totalPages);
@@ -42,108 +44,18 @@ const TeacherListPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [classes, setClasses] = useState([]); // Initialize as empty array
-  const [subjects, setSubjects] = useState([]); // Initialize subjects as empty array
-  const [classesLoading, setClassesLoading] = useState(true);
-  const [subjectsLoading, setSubjectsLoading] = useState(true); // Loading state for subjects
   const [query, setQuery] = useState("");
   const [role, setRole] = useState('');
   const limit = 10;
 
-  // Fetch classes data
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        setClassesLoading(true);
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/class");
-        const data = await res.json();
-        // Make sure we're setting an array
-        setClasses(Array.isArray(data) ? data : (data.classes || []));
-      } catch (error) {
-        console.error("Failed to fetch classes", error);
-        setClasses([]); // Set to empty array on error
-      } finally {
-        setClassesLoading(false);
-      }
-    };
-
-    fetchClasses();
-  }, []);
-
-  // Fetch subjects data
-  useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        setSubjectsLoading(true);
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/subject");
-        const data = await res.json();
-        // Make sure we're setting an array
-        setSubjects(Array.isArray(data) ? data : (data.subjects || []));
-      } catch (error) {
-        console.error("Failed to fetch subjects", error);
-        setSubjects([]); // Set to empty array on error
-      } finally {
-        setSubjectsLoading(false);
-      }
-    };
-
-    fetchSubjects();
-  }, []);
-
   // Modified function to handle both single ID and array of IDs for classes
   const getClassName = (idOrIds) => {
-    if (!Array.isArray(classes)) {
-      return "Loading...3";
-    }
-
-    // Handle array of IDs
-    if (Array.isArray(idOrIds)) {
-      return idOrIds.map(id => {
-        const foundClass = classes.find((t) => t && t._id === id);
-        return foundClass ? foundClass.name : "Unknown";
-      }).join(", ");
-    }
-
-    // Handle comma-separated string of IDs
-    if (typeof idOrIds === 'string' && idOrIds.includes(',')) {
-      const idArray = idOrIds.split(',').map(id => id.trim());
-      return idArray.map(id => {
-        const foundClass = classes.find((t) => t && t._id === id);
-        return foundClass ? foundClass.name : "Unknown";
-      }).join(", ");
-    }
-
-    // Handle single ID (original functionality)
-    const foundClass = classes.find((t) => t && t._id === idOrIds);
-    return foundClass ? `${foundClass.name}` : "Unknown";
+    return idOrIds.map((c) => c.name).join(", ");
   };
 
   // Function to get subject names from subject IDs
   const getSubjectName = (idOrIds) => {
-    if (!Array.isArray(subjects)) {
-      return "Loading...1";
-    }
-
-    // Handle array of IDs
-    if (Array.isArray(idOrIds)) {
-      return idOrIds.map(id => {
-        const foundSubject = subjects.find((s) => s && s._id === id);
-        return foundSubject ? foundSubject.name : "Unknown";
-      }).join(", ");
-    }
-
-    // Handle comma-separated string of IDs
-    if (typeof idOrIds === 'string' && idOrIds.includes(',')) {
-      const idArray = idOrIds.split(',').map(id => id.trim());
-      return idArray.map(id => {
-        const foundSubject = subjects.find((s) => s && s._id === id);
-        return foundSubject ? foundSubject.name : "Unknown";
-      }).join(", ");
-    }
-
-    // Handle single ID
-    const foundSubject = subjects.find((s) => s && s._id === idOrIds);
-    return foundSubject ? `${foundSubject.name}` : "Unknown";
+    return idOrIds.map((s) => s.name).join(", ");
   };
 
   // Effects should be after all hooks but before any returns
@@ -166,7 +78,7 @@ const TeacherListPage = () => {
         formData.append(key, data[key]);
       });
 
-      const response = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher", {
+      const response = await fetch(`${API_BASE_URL}/api/teacher`, {
         method: "POST",
         body: formData,
       });
@@ -211,16 +123,16 @@ const TeacherListPage = () => {
         <div className="flex flex-col">
           <h3 className="font-semibold">{teacher.firstName}</h3>
           <span className="text-gray-500 text-xs">
-            {subjectsLoading ? "Loading...4" : getSubjectName(teacher.subjects)}
+            {getSubjectName(teacher.subjects)}
           </span>
         </div>
       </td>
       <td className="hidden md:table-cell">{teacher.teacherId}</td>
       <td className="hidden md:table-cell">
-        {subjectsLoading ? "Loading...5" : getSubjectName(teacher.subjects)}
+        {getSubjectName(teacher.subjects)}
       </td>
       <td className="hidden md:table-cell">
-        {classesLoading ? "Loading...6" : getClassName(teacher.classes.join(","))}
+        {getClassName(teacher.classes)}
       </td>
       <td className="hidden lg:table-cell">{teacher.phone}</td>
       <td className="hidden lg:table-cell">{teacher.address}</td>
@@ -232,13 +144,21 @@ const TeacherListPage = () => {
             </button>
           </Link>
           {role === "admin" && (
-            <FormModal
-              table="teacher"
-              type="delete"
-              id={teacher._id}
-              handleDelete={handleDeleteTeacher}
-              onSuccess={handleFormSuccess}
-            />
+            <>
+              <FormModal
+                table="teacher"
+                type="update"
+                data={teacher}
+                onSuccess={handleFormSuccess}
+              />
+              <FormModal
+                table="teacher"
+                type="delete"
+                id={teacher._id}
+                handleDelete={handleDeleteTeacher}
+                onSuccess={handleFormSuccess}
+              />
+            </>
           )}
         </div>
       </td>
@@ -276,7 +196,7 @@ const TeacherListPage = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-yPurple">
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {role === "admin" && <FormModal table="teacher" type="create" data={{ onCreate: handleCreateTeacher }} />}
+            {role === "admin" && <FormModal table="teacher" type="create" onSuccess={handleFormSuccess} />}
           </div>
         </div>
       </div>

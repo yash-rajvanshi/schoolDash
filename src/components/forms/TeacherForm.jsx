@@ -8,6 +8,8 @@ import { z } from "zod";
 import InputField from "../InputField";
 import Image from "next/image";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 async function uploadToCloudinary(file) {
   const formData = new FormData();
   formData.append("file", file);
@@ -35,7 +37,7 @@ const schema = z.object({
   lastName: z.string().min(1, { message: "Last name is required!" }),
   phone: z.string().min(1, { message: "Phone is required!" }),
   address: z.string().min(1, { message: "Address is required!" }),
-  bloodType: z.string().min(1, { message: "Blood Type is required!" }),
+  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], { message: "Please select a valid blood type!" }),
   birthday: z.string().min(1, { message: "Birthday is required!" }),
   sex: z.enum(["male", "female", "OTHER"], { message: "Sex is required!" }),
   photo: z.string().url({ message: "Image URL is required after upload!" }),
@@ -108,7 +110,7 @@ const TeacherForm = ({ type, data }) => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/class");
+        const res = await fetch(`${API_BASE_URL}/api/class`);
         const json = await res.json();
         console.log("Fetched Classes:", json);
         setClasses(json.classes);
@@ -119,7 +121,7 @@ const TeacherForm = ({ type, data }) => {
     
     const fetchSubjects = async () => {
       try {
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/subject");
+        const res = await fetch(`${API_BASE_URL}/api/subject`);
         const json = await res.json();
         console.log("Fetched Subjects:", json);
         setSubjects(json.subjects || []); // Ensure we have an array even if API returns differently
@@ -253,7 +255,7 @@ const TeacherForm = ({ type, data }) => {
       // Process subjects to add teacher to
       for (const subjectId of subjectsToAdd) {
         // First get the current subject data
-        const getResponse = await fetch(`https://backend-dashboard-l273.onrender.com/api/subject/${subjectId}`);
+        const getResponse = await fetch(`${API_BASE_URL}/api/subject/${subjectId}`);
         const subjectData = await getResponse.json();
         
         // Prepare updated teachers array - ensure we don't add duplicates
@@ -263,7 +265,7 @@ const TeacherForm = ({ type, data }) => {
         }
         
         // Update the subject
-        await fetch(`https://backend-dashboard-l273.onrender.com/api/subject/${subjectId}`, {
+        await fetch(`${API_BASE_URL}/api/subject/${subjectId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -275,7 +277,7 @@ const TeacherForm = ({ type, data }) => {
       // Process subjects to remove teacher from
       for (const subjectId of subjectsToRemove) {
         // First get the current subject data
-        const getResponse = await fetch(`https://backend-dashboard-l273.onrender.com/api/subject/${subjectId}`);
+        const getResponse = await fetch(`${API_BASE_URL}/api/subject/${subjectId}`);
         const subjectData = await getResponse.json();
         
         // Prepare updated teachers array - filter out this teacher
@@ -287,7 +289,7 @@ const TeacherForm = ({ type, data }) => {
           : [];
         
         // Update the subject
-        await fetch(`https://backend-dashboard-l273.onrender.com/api/subject/${subjectId}`, {
+        await fetch(`${API_BASE_URL}/api/subject/${subjectId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -309,7 +311,7 @@ const TeacherForm = ({ type, data }) => {
       
       const payload = {
         ...values,
-        teacherId: data?.teacherId || 1,
+        teacherId: Math.floor(Math.random() * 1000000) + 100000,
         password: values.email + values.username,
       };
 
@@ -317,8 +319,8 @@ const TeacherForm = ({ type, data }) => {
 
       const url =
         type === "update"
-          ? `https://backend-dashboard-l273.onrender.com/api/teacher/${data?._id}`
-          : "https://backend-dashboard-l273.onrender.com/api/teacher";
+          ? `${API_BASE_URL}/api/teacher/${data?._id}`
+          : `${API_BASE_URL}/api/teacher`;
 
       const response = await fetch(url, {
         method: type === "update" ? "PUT" : "POST",
@@ -328,21 +330,29 @@ const TeacherForm = ({ type, data }) => {
         body: JSON.stringify(payload),
       });
       
-      const teacherData = await response.json();
-      const teacherId = type === "update" ? data?._id : teacherData._id;
-      
-      console.log("Teacher saved successfully:", teacherData);
-      
-      // Now update the subjects with this teacher ID
-      await updateSubjectsWithTeacher(
-        teacherId, 
-        values.subjects, 
-        type === "update" ? initialSubjects : []
-      );
+      if (response.ok) {
+        const teacherData = await response.json();
+        const teacherId = type === "update" ? data?._id : teacherData._id;
+        
+        console.log("Teacher saved successfully:", teacherData);
+        
+        // Now update the subjects with this teacher ID
+        await updateSubjectsWithTeacher(
+          teacherId, 
+          values.subjects, 
+          type === "update" ? initialSubjects : []
+        );
 
-      if (type !== "update") reset();
-      
-      alert("Teacher " + (type === "update" ? "updated" : "created") + " successfully!");
+        if (onSuccess) {
+          onSuccess(teacherData);
+        }
+        if (type !== "update") reset();
+        
+        alert("Teacher " + (type === "update" ? "updated" : "created") + " successfully!");
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error || 'Failed to save teacher'}`);
+      }
     } catch (error) {
       console.error("Error submitting form", error);
       alert("There was an error " + (type === "update" ? "updating" : "creating") + " the teacher. Please check the console for details.");

@@ -1,3 +1,4 @@
+"use client";
 import Announcements from "@/components/AnnouncementsT";
 import BigCalendar from "@/components/BigCalendar";
 

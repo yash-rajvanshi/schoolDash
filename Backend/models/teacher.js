@@ -1,76 +1,119 @@
-// const mongoose = require("mongoose");
-
-// const TeacherSchema = new mongoose.Schema({
-//   username: { type: String, unique: true, required: true },
-//   name: { type: String, required: true },
-//   surname: { type: String, required: true },
-//   email: { type: String, unique: true, sparse: true },
-//   phone: { type: String, unique: true, sparse: true },
-//   address: { type: String, required: true },
-//   img: { type: String },
-//   bloodType: { type: String, required: true },
-//   sex: { type: String, enum: ["Male", "Female", "OTHER"], required: true },
-//   createdAt: { type: Date, default: Date.now },
-//   subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subject" }],
-//   lessons: [{ type: mongoose.Schema.Types.ObjectId, ref: "Lesson" }],
-//   classes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Class" }],
-// });
-
-// module.exports = mongoose.model("Teacher", TeacherSchema);
-
-// Backend/models/teacher.js -------------------------------------------------------------
 const mongoose = require("mongoose");
 
-// Create a counter schema for auto-incrementing teacherId
-const CounterSchema = new mongoose.Schema({
-  _id: { type: String, required: true },
-  seq: { type: Number, default: 0 }
-});
-
-const Counter = mongoose.models.Counter || mongoose.model('Counter', CounterSchema);
-
 const TeacherSchema = new mongoose.Schema({
-  teacherId: { type: Number, unique: true, required: true },
-  username: { type: String, unique: true, required: true },
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  email: { type: String, unique: true, sparse: true },
-  phone: { type: String, unique: true, sparse: true },
-  address: { type: String, required: true },
-  photo: { type: String },
-  // grade: { type: Number, required: true },
-  bloodType: { type: String, required: true },
-  sex: { type: String, enum: ["male", "female", "OTHER"], },
-  createdAt: { type: Date, default: Date.now },
-  birthday: { type: String },
-  // class: { type: String, required: true },
-  // classId: { type: String, required: true },
-  // gradeId: { type: String, required: true },
-  // subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subject" }],
-  subjects: [{ type: String}],
-  // lessons: [{ type: mongoose.Schema.Types.ObjectId, ref: "Lesson" }],
-  classes: [{ type: String}],
-  
+  username: { 
+    type: String, 
+    unique: true, 
+    required: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 50
+  },
+  firstName: { 
+    type: String, 
+    required: true,
+    trim: true,
+    minlength: 2,
+    maxlength: 50
+  },
+  lastName: { 
+    type: String, 
+    required: true,
+    trim: true,
+    minlength: 2,
+    maxlength: 50
+  },
+  email: { 
+    type: String, 
+    unique: true, 
+    sparse: true,
+    required: true,
+    trim: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  },
+  phone: { 
+    type: String, 
+    unique: true, 
+    sparse: true,
+    required: true,
+    trim: true,
+    match: [/^[\+]?[\s\-\(\)]?[\d\s\-\(\)]+$/, 'Please enter a valid phone number']
+  },
+  address: { 
+    type: String, 
+    required: true,
+    trim: true,
+    minlength: 10,
+    maxlength: 200
+  },
+  photo: { 
+    type: String,
+    default: null
+  },
+  bloodType: { 
+    type: String, 
+    required: true,
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+  },
+  sex: { 
+    type: String, 
+    enum: ["male", "female", "OTHER"],
+    required: true
+  },
+  teacherId: {
+    type: Number,
+    unique: true,
+    required: true
+  },
+  birthday: { 
+    type: Date,
+    validate: {
+      validator: function(v) {
+        return v <= new Date();
+      },
+      message: 'Birthday cannot be in the future'
+    }
+  },
+  subjects: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Subject"
+  }],
+  classes: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Class"
+  }],
+  isActive: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  timestamps: true
 });
 
-// Pre-save middleware to auto-increment teacherId
-TeacherSchema.pre('save', async function(next) {
-  const doc = this;
-  if (doc.isNew) {
-    try {
-      const counter = await Counter.findByIdAndUpdate(
-        { _id: 'teacherId' },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
-      doc.teacherId = counter.seq;
-      next();
-    } catch (error) {
-      return next(error);
-    }
-  } else {
-    next();
-  }
+// Indexes for better query performance
+TeacherSchema.index({ email: 1 });
+TeacherSchema.index({ username: 1 });
+TeacherSchema.index({ phone: 1 });
+TeacherSchema.index({ isActive: 1 });
+
+// Virtual for full name
+TeacherSchema.virtual('fullName').get(function() {
+  return `${this.firstName} ${this.lastName}`;
 });
+
+// Ensure virtual fields are serialized
+TeacherSchema.set('toJSON', { virtuals: true });
+TeacherSchema.set('toObject', { virtuals: true });
+
+// Pre-save middleware to generate unique subject code if not provided
+TeacherSchema .pre('save', function(next) {
+    // Generate a unique studentId based on timestamp and random number
+  const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+  const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  this.teacherId = parseInt(timestamp + randomNum);
+  next();
+});
+
 
 module.exports = mongoose.model("Teacher", TeacherSchema);

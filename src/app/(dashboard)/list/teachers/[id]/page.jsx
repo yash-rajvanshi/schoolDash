@@ -9,6 +9,8 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const SingleTeacherPage = () => {
   const { id } = useParams();
   const [teacher, setTeacher] = useState(null);
@@ -27,25 +29,11 @@ const SingleTeacherPage = () => {
   useEffect(() => {
     const fetchTeacher = async () => {
       try {
-        const res = await fetch(`https://backend-dashboard-l273.onrender.com/api/teacher/${id}`);
+        const res = await fetch(`${API_BASE_URL}/api/teacher/${id}`);
         if (!res.ok) throw new Error("Teacher not found");
 
         const data = await res.json();
         setTeacher(data);
-        
-        // If teacher has classes, fetch class details
-        if (data.classes && data.classes.length > 0) {
-          // Fetch class details for each class ID
-          const classPromises = data.classes.map(classId => 
-            fetch(`https://backend-dashboard-l273.onrender.com/api/class/${classId}`).then(res => {
-              if (!res.ok) throw new Error(`Class with ID ${classId} not found`);
-              return res.json();
-            })
-          );
-          
-          const classesData = await Promise.all(classPromises);
-          setClassData(classesData);
-        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -135,8 +123,8 @@ const SingleTeacherPage = () => {
               <Image src='/singleClass.png' alt="" width={24} height={24} className='w-6 h-6' />
               <div>
                 <div className="flex flex-wrap gap-2">
-                  {classData.length > 0 ? (
-                    classData.map((classItem, index) => (
+                  {teacher.classes.length > 0 ? (
+                    teacher.classes.map((classItem, index) => (
                       <h1 key={index} className="text-xl font-semibold">
                         {classItem.name || "Unnamed Class"}
                       </h1>

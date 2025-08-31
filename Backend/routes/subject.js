@@ -6,8 +6,11 @@ const Teacher = require("../models/teacher")
 // 📌 Create a new Subject
 router.post("/", async (req, res) => {
   try {
-    const newSubject = new Subject(req.body);
+    const { removedTeachers, addedTeachers, ...rest } = req.body;
+    const newSubject = new Subject(rest);
     await newSubject.save();
+    await Teacher.updateMany({ _id: { $in: removedTeachers } }, { $pull: { subjects: newSubject._id } });
+    await Teacher.updateMany({ _id: { $in: addedTeachers } }, { $push: { subjects: newSubject._id } });
     res.status(201).json({ message: "Subject created successfully!", subject: newSubject });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -76,9 +79,24 @@ router.get("/:id", async (req, res) => {
 // 📌 Update a subject by ID
 router.put("/:id", async (req, res) => {
   try {
-    const updatedSubject = await Subject.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    const teacherUpdatedsub = await Teacher.find
+    const { removedTeachers, addedTeachers, ...rest } = req.body;
+    const updatedSubject = await Subject.findByIdAndUpdate(req.params.id, rest, { new: true });
+    // Handle removing subject from teachers who are no longer assigned
+    if (removedTeachers && removedTeachers.length > 0) {
+      await Teacher.updateMany(
+        { _id: { $in: removedTeachers } },
+        { $pull: { subjects: updatedSubject._id } }
+      );
+    }
 
+    // Handle adding subject to newly assigned teachers
+    if (addedTeachers && addedTeachers.length > 0) {
+      await Teacher.updateMany(
+        { _id: { $in: addedTeachers } },
+        { $addToSet: { subjects: updatedSubject._id } }
+      );
+    }
+    
     if (!updatedSubject) return res.status(404).json({ error: "Subject not found" });
 
     res.status(200).json({ message: "Subject updated successfully!", subject: updatedSubject });

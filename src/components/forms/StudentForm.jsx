@@ -8,6 +8,8 @@ import { z } from "zod";
 import InputField from "../InputField";
 import Image from "next/image";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 async function uploadToCloudinary(file) {
   const formData = new FormData();
   formData.append("file", file);
@@ -39,7 +41,7 @@ const schema = z.object({
   lastName: z.string().min(1, { message: "Last name is required!" }),
   phone: z.string().min(1, { message: "Phone is required!" }),
   address: z.string().min(1, { message: "Address is required!" }),
-  bloodType: z.string().min(1, { message: "Blood Type is required!" }),
+  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], { message: "Please select a valid blood type!" }),
   birthday: z.string().min(1, { message: "Birthday is required!" }),
   sex: z.enum(["male", "female", "OTHER"], { message: "Sex is required!" }),
   photo: z.string().url({ message: "Image URL is required after upload!" }).optional(),
@@ -50,7 +52,7 @@ const schema = z.object({
   results: z.array(z.string()).optional(),
 });
 
-const StudentForm = ({ type, data }) => {
+const StudentForm = ({ type, data, onSuccess }) => {
   const [uploading, setUploading] = useState(false);
   const {
     register,
@@ -67,7 +69,7 @@ const StudentForm = ({ type, data }) => {
       results: data?.results || [],
     },
   });
-
+  console.log(data);
   const selectedClass = watch("class");
   const selectedGrade = watch("gradeId");
 
@@ -116,7 +118,7 @@ const StudentForm = ({ type, data }) => {
     try {
       const payload = {
         ...values,
-        studentId: data?.studentId || 1,
+        studentId: Math.floor(Math.random() * 1000000),
         grade: values.class || values.grade,
         class: values.classId || values.class, // 👈 override 'class' with 'classId'
         password: values.email + values.username,
@@ -126,20 +128,31 @@ const StudentForm = ({ type, data }) => {
   
       const url =
         type === "update"
-          ? `https://backend-dashboard-l273.onrender.com/api/student/${data?._id}`
-          : "https://backend-dashboard-l273.onrender.com/api/student";
+          ? `${API_BASE_URL}/api/student/${data?._id}`
+          : `${API_BASE_URL}/api/student`;
   
-      await fetch(url, {
+      const response = await fetch(url, {
         method: type === "update" ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-  
-      if (type !== "update") reset();
+
+      if (response.ok) {
+        const result = await response.json();
+        if (onSuccess) {
+          onSuccess(result);
+        }
+        if (type !== "update") reset();
+        alert(`Student ${type === "update" ? "updated" : "created"} successfully!`);
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error || 'Failed to save student'}`);
+      }
     } catch (error) {
       console.error("Error submitting form", error);
+      alert('Network error occurred. Please try again.');
     }
   };
 

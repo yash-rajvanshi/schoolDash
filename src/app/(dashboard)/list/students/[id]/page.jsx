@@ -10,6 +10,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuthHook';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const SingleStudentPage = () => {
     useAuth();
     const { id } = useParams();
@@ -29,7 +31,7 @@ const SingleStudentPage = () => {
     useEffect(() => {
         const fetchStudent = async () => {
             try {
-                const res = await fetch(`https://backend-dashboard-l273.onrender.com/api/student/${id}`);
+                const res = await fetch(`${API_BASE_URL}/api/student/${id}`);
                 if (!res.ok) throw new Error("Student not found");
 
                 const data = await res.json();
@@ -74,6 +76,10 @@ const SingleStudentPage = () => {
                                         table="student"
                                         type="update"
                                         data={student}
+                                        onSuccess={() => {
+                                            // Refresh the student data after update
+                                            window.location.reload();
+                                        }}
                                     />
                                 )}
                             </div>

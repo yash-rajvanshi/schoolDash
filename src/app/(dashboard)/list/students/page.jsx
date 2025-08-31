@@ -10,10 +10,12 @@ import Link from "next/link";
 import { useAuth } from '@/app/hooks/useAuthHook'; //for role
 // import fetchWithAuth from "@/app/lib/api";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const fetchStudentsFromApi = async (page, limit, setStudents, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/student?page=${page}&limit=${limit}`); //fetchWithAuth can be used
+    const response = await fetch(`${API_BASE_URL}/api/student?page=${page}&limit=${limit}`); //fetchWithAuth can be used
     const data = await response.json();
     setStudents(data.students);
     setTotalPages(data.totalPages);
@@ -41,17 +43,17 @@ const StudentlistPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [students, setStudents] = useState([]);
   const limit = 10;
-  
+
   // Move role state here
   const [role, setRole] = useState(''); //for role
-  
+
   // Effects also need to be before any returns
   useEffect(() => {
     if (user?.role) {
       setRole(user.role); //for role
     }
   }, [user]);
-  
+
   useEffect(() => {
     // Only fetch data if user is admin
     if (role === 'admin' || role === 'teacher') {
@@ -66,7 +68,7 @@ const StudentlistPage = () => {
         formData.append(key, data[key]);
       });
 
-      const response = await fetch("https://backend-dashboard-l273.onrender.com/api/student", {
+      const response = await fetch(`${API_BASE_URL}/api/student`, {
         method: "POST",
         body: formData,
       });
@@ -85,24 +87,24 @@ const StudentlistPage = () => {
   };
 
   // Add this function to your list page component
-const handleDeleteStudent = (id) => {
-  // Immediately update the UI by removing the item
-  setStudents((prev) => prev.filter((item) => item._id !== id));
-  
-  // Check if we should go to the previous page
-  if (students.length === 1 && page > 1) {
-    setPage(prev => prev - 1);
-  } else {
-    // Re-fetch data to ensure consistency
-    fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading);
-  }
-};
+  const handleDeleteStudent = (id) => {
+    // Immediately update the UI by removing the item
+    setStudents((prev) => prev.filter((item) => item._id !== id));
 
-// Add this function to handle any form success (create/update)
-const handleFormSuccess = () => {
-  // Re-fetch data after successful create/update
-  fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading);
-};
+    // Check if we should go to the previous page
+    if (students.length === 1 && page > 1) {
+      setPage(prev => prev - 1);
+    } else {
+      // Re-fetch data to ensure consistency
+      fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading);
+    }
+  };
+
+  // Add this function to handle any form success (create/update)
+  const handleFormSuccess = () => {
+    // Re-fetch data after successful create/update
+    fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading);
+  };
 
 
   const renderRow = (student) => (
@@ -125,6 +127,7 @@ const handleFormSuccess = () => {
               <Image src="/view.png" alt="View" width={16} height={16} className="rounded-full" />
             </button>
           </Link>
+          {role === "admin" && <FormModal table="student" type="create" onSuccess={handleFormSuccess} />}
           {role === "admin" && (
             <FormModal
               table="student"
@@ -143,7 +146,7 @@ const handleFormSuccess = () => {
   if (authLoading) {
     return <p className="text-center mt-10">Loading...</p>;
   }
-  
+
   if (user?.role !== 'admin' && user?.role !== 'teacher') {
     return <p className="text-center mt-10">Access denied</p>;
   }
@@ -161,7 +164,7 @@ const handleFormSuccess = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-yPurple">
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {role === "admin" && <FormModal table="student" type="create" data={{ onCreate: handleCreateStudent }} />}
+            {role === "admin" && <FormModal table="student" type="create" onSuccess={handleFormSuccess} />}
           </div>
         </div>
       </div>

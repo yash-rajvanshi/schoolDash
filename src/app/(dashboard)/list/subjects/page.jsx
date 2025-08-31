@@ -8,10 +8,12 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const fetchSubjectsFromApi = async (page, limit, setSubjects, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/subject?page=${page}&limit=${limit}`);
+    const response = await fetch(`${API_BASE_URL}/api/subject?page=${page}&limit=${limit}`);
     const data = await response.json();
     setSubjects(data.subjects);
     setTotalPages(data.totalPages);
@@ -38,7 +40,7 @@ const SubjectListPage = () => {
     const fetchTeachers = async () => {
       try {
         setTeachersLoading(true);
-        const res = await fetch("https://backend-dashboard-l273.onrender.com/api/teacher");
+        const res = await fetch(`${API_BASE_URL}/api/teacher`);
         const data = await res.json();
         setTeachers(Array.isArray(data) ? data : (data.teachers || []));
       } catch (error) {
@@ -78,12 +80,11 @@ const SubjectListPage = () => {
 
   const handleDeleteSubject = async (id) => {
     try {
-      const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/subject/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/subject/${id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        alert("Subject deleted successfully!");
         setSubjects((prev) => prev.filter((item) => item._id !== id));
       } else {
         const data = await response.json();
@@ -91,8 +92,14 @@ const SubjectListPage = () => {
       }
     } catch (error) {
       console.error("Error deleting Subject:", error);
-      alert("An error occurred while deleting the Subject.");
+      // alert("An error occurred while deleting the Subject.");
     }
+  };
+
+  // Add this function to handle any form success (create/update)
+  const handleFormSuccess = () => {
+    // Re-fetch data after successful create/update
+    fetchSubjectsFromApi(page, limit, setSubjects, setTotalPages, setLoading);
   };
 
   const columns = [
@@ -121,8 +128,8 @@ const SubjectListPage = () => {
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher") && (
             <>
-              <FormModal table="subject" type="update" data={item} />
-              <FormModal table="subject" type="delete" id={item._id} handleDelete={() => handleDeleteSubject(item._id)} />
+              <FormModal table="subject" type="update" data={item} onSuccess={handleFormSuccess} />
+              <FormModal table="subject" type="delete" id={item._id} handleDelete={() => handleDeleteSubject(item._id)} onSuccess={handleFormSuccess} />
             </>
           )}
         </div>
@@ -153,7 +160,7 @@ const SubjectListPage = () => {
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
             {(role === "admin" || role === "teacher") && (
-              <FormModal table="subject" type="create" />
+              <FormModal table="subject" type="create" onSuccess={handleFormSuccess} />
             )}
           </div>
         </div>

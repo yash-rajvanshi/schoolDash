@@ -8,11 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-
-
-
-
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
 
 const CountChart = () => {
   const [val, setVal] = useState([]);
@@ -20,7 +16,7 @@ const CountChart = () => {
 
     const fetchGenderCount = async () => {
       try {
-        const response = await fetch("https://backend-dashboard-l273.onrender.com/api/student/genderCount")
+        const response = await fetch(`${API_BASE_URL}/api/student/genderCount`)
         if (!response.ok) {
           console.log("Error occurred")
           return;
@@ -81,7 +77,7 @@ const data = [
           alt=""
           width={50}
           height={50}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          className="absolute top-1/2 left-1/2 -translate-x-2 -translate-y-1/2"
         />
       </div>
       {/* BOTTOM */}

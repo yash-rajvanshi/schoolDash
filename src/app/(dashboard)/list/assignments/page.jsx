@@ -8,10 +8,12 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const fetchAssignmentsFromApi = async (page, limit, setAssignments, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/assignment?page=${page}&limit=${limit}`);
+    const response = await fetch(`${API_BASE_URL}/api/assignment?page=${page}&limit=${limit}`);
     const data = await response.json();
     setAssignments(data.assignments);
     setTotalPages(data.totalPages);
@@ -53,7 +55,7 @@ const AssignmentListPage = () => {
 
   const handleDeleteAssignment = async (id) => {
     try {
-      const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/assignment/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/assignment/${id}`, {
         method: "DELETE",
       });
 
@@ -70,6 +72,12 @@ const AssignmentListPage = () => {
     }
   };
 
+  // Add this function to handle any form success (create/update)
+  const handleFormSuccess = () => {
+    // Re-fetch data after successful create/update
+    fetchAssignmentsFromApi(page, limit, setAssignments, setTotalPages, setLoading);
+  };
+
   const renderRow = (item) => (
     <tr key={item._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="p-4">{item.subject}</td>
@@ -80,8 +88,8 @@ const AssignmentListPage = () => {
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher" ) && (
             <>
-              <FormModal table="assignment" type="update" data={item} />
-              <FormModal table="assignment" type="delete" id={item._id} handleDelete={() => handleDeleteAssignment(item._id)} />
+              <FormModal table="assignment" type="update" data={item} onSuccess={handleFormSuccess} />
+              <FormModal table="assignment" type="delete" id={item._id} handleDelete={() => handleDeleteAssignment(item._id)} onSuccess={handleFormSuccess} />
             </>
           )}
         </div>
@@ -112,7 +120,7 @@ const AssignmentListPage = () => {
               <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
             {(role === "admin" || role === "teacher") && (
-              <FormModal table="assignment" type="create" />
+              <FormModal table="assignment" type="create" onSuccess={handleFormSuccess} />
             )}
           </div>
         </div>

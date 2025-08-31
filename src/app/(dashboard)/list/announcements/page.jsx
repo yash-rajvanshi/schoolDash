@@ -8,10 +8,12 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+
 const fetchAnnouncementsFromApi = async (page, limit, setAnnouncements, setTotalPages, setLoading) => {
   try {
     setLoading(true);
-    const response = await fetch(`https://backend-dashboard-l273.onrender.com/api/announcement?page=${page}&limit=${limit}`);
+    const response = await fetch(`${API_BASE_URL}/api/announcement?page=${page}&limit=${limit}`);
     const data = await response.json();
     setAnnouncements(data.announcements);
     setTotalPages(data.totalPages);

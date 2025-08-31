@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
 
     // 5. Generate JWT token
     const token = jwt.sign(
-      { id: newUser._id, email: newUser.email, role: newUser.role, firstName: newUser.firstName,lastName: newUser.lastName, photo: newUser.photo  },
+      { id: newUser._id, email: newUser.email, role: newUser.role, firstName: newUser.firstName, lastName: newUser.lastName, photo: newUser.photo },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -98,7 +98,7 @@ router.get("/", async (req, res) => {
     const skip = (page - 1) * limit;
 
     const totalTeachers = await Teacher.countDocuments();           // total teacher count
-    const teachers = await Teacher.find().skip(skip).limit(limit);  // paginated query
+    const teachers = await Teacher.find().skip(skip).limit(limit).populate('subjects', 'name').populate('classes', 'name').lean();  // paginated query
 
     const totalPages = Math.ceil(totalTeachers / limit);
 
@@ -114,20 +114,20 @@ router.get("/", async (req, res) => {
 });
 
 
-router.get("/countTeachers",async(req,res)=>{
+router.get("/countTeachers", async (req, res) => {
   try {
     const countTeachers = await Teacher.find().countDocuments();
-    res.status(200).json({count:countTeachers});
+    res.status(200).json({ count: countTeachers });
   } catch (error) {
-    res.status(500).json({message:"Internal Server Error."})
-    
+    res.status(500).json({ message: "Internal Server Error." })
+
   }
 })
 
 // Get Teacher by ID
 router.get("/:id", async (req, res) => {
   try {
-    const teacher = await Teacher.findById(req.params.id);
+    const teacher = await Teacher.findById(req.params.id).populate('subjects', 'name').populate('classes', 'name').lean();
     if (!teacher) return res.status(404).json({ error: "Teacher not found" });
     res.status(200).json(teacher);
   } catch (error) {
