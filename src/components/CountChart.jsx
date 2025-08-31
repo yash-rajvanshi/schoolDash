@@ -36,11 +36,6 @@ const CountChart = () => {
 
 const data = [
   {
-    name: "Total",
-    count: val.female+val.male,
-    fill: "white",
-  },
-  {
     name: "Girls",
     count: val.female,
     fill: "#FAE27C",
@@ -66,7 +61,7 @@ const data = [
             cy="50%"
             innerRadius="40%"
             outerRadius="100%"
-            barSize={32}
+            barSize={25}
             data={data}
           >
             <RadialBar background dataKey="count" />
@@ -75,9 +70,9 @@ const data = [
         <Image
           src="/maleFemale.png"
           alt=""
-          width={50}
+          width={30}
           height={50}
-          className="absolute top-1/2 left-1/2 -translate-x-2 -translate-y-1/2"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         />
       </div>
       {/* BOTTOM */}
@@ -85,12 +80,12 @@ const data = [
         <div className="flex flex-col gap-1">
           <div className="w-5 h-5 bg-lamaSky rounded-full" />
           <h1 className="font-bold">{val.male}</h1>
-          <h2 className="text-xs text-gray-300">Boys (55%)</h2>
+          <h2 className="text-xs text-gray-300">Boys ({((val.male / (val.female + val.male)) * 100).toFixed(2)}%)</h2>
         </div>
         <div className="flex flex-col gap-1">
           <div className="w-5 h-5 bg-lamaYellow rounded-full" />
           <h1 className="font-bold">{val.female}</h1>
-          <h2 className="text-xs text-gray-300">Girls (45%)</h2>
+          <h2 className="text-xs text-gray-300">Girls ({((val.female / (val.female + val.male)) * 100).toFixed(2)}%)</h2>
         </div>
       </div>
     </div>
