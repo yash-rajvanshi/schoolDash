@@ -8,7 +8,7 @@ import { z } from "zod";
 import InputField from "../InputField";
 import Image from "next/image";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function uploadToCloudinary(file) {
   const formData = new FormData();

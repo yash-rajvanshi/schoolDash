@@ -14,7 +14,7 @@ const schema = z.object({
     .min(1, { message: "At least one teacher is required!" }),
 });
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const SubjectForm = ({ type, data, onSuccess }) => {
     const [submitting, setSubmitting] = useState(false);

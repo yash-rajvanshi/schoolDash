@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const login = async (email, password) => {
     try {

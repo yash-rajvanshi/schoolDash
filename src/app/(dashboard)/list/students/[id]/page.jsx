@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuthHook';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const SingleStudentPage = () => {
     useAuth();

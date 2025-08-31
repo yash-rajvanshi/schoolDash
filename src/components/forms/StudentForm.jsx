@@ -8,7 +8,7 @@ import { z } from "zod";
 import InputField from "../InputField";
 import Image from "next/image";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function uploadToCloudinary(file) {
   const formData = new FormData();
@@ -89,30 +89,6 @@ const StudentForm = ({ type, data, onSuccess }) => {
     }
   };
 
-
-  // const onSubmit = async (values) => {
-  //   try {
-  //     const payload = {
-  //       ...values,
-  //       studentId: 1,
-  //       grade: values.class || values.grade,
-  //       class: values.classId || values.class, // 👈 override 'class' with 'classId'
-  //     };
-
-  //     console.log("Final Payload: ", payload);
-
-  //     await fetch("https://backend-dashboard-l273.onrender.com/api/student", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(payload),
-  //     });
-  //     reset();
-  //   } catch (error) {
-  //     console.error("Error submitting form", error);
-  //   }
-  // };
 
   const onSubmit = async (values) => {
     try {

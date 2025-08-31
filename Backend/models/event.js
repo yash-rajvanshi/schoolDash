@@ -53,11 +53,12 @@ const EventSchema = new mongoose.Schema({
     type: Date, 
     required: true
   },
-  classId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "Class", 
-    default: null 
-  },
+  classId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Class",
+  required: false,
+  set: v => v === "" ? undefined : v  // 👈 converts "" into undefined
+},
   location: {
     type: String,
     trim: true,

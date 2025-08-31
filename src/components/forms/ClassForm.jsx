@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import InputField from "../InputField";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const schema = z.object({
   name: z.string().min(1, { message: "Name is required!" }).regex(/^\d[A-Za-z]$/, { message: "Name must be exactly 2 characters: a number followed by a letter (e.g., 1A, 2B)" }),

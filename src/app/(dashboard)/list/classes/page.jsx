@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
+// import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // This function doesn't use hooks, so it can stay outside the component
 const fetchClasssFromApi = async (page, limit, setClasss, setTotalPages, setLoading) => {
@@ -161,16 +161,11 @@ const ClassListPage = () => {
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* Top Section */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Classes</h1>
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
+        <h1 className="text-lg font-semibold">All Classes</h1>
+        <div className="flex flex-col md:flex-row items-center gap-4 w-1/2 md:w-auto">
+          {/* {/* <TableSearch /> */}
           <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="Filter" width={14} height={14} />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="Sort" width={14} height={14} />
-            </button>
+            
             {(role === "admin" || role === "teacher") && (
               <FormModal table="class" type="create" onSuccess={handleFormSuccess} />
             )}

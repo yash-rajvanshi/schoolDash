@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useAuth } from '@/app/hooks/useAuthHook'; //for role
 // import fetchWithAuth from "@/app/lib/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-dashboard-l273.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const fetchStudentsFromApi = async (page, limit, setStudents, setTotalPages, setLoading) => {
   try {
@@ -127,15 +127,24 @@ const StudentlistPage = () => {
               <Image src="/view.png" alt="View" width={16} height={16} className="rounded-full" />
             </button>
           </Link>
-          {role === "admin" && <FormModal table="student" type="create" onSuccess={handleFormSuccess} />}
+          {/* {role === "admin" && <FormModal table="student" type="create" onSuccess={handleFormSuccess} />} */}
           {role === "admin" && (
+            <>
             <FormModal
+                table="student"
+                type="update"
+                data={student}
+                onSuccess={handleFormSuccess}
+              />
+              <FormModal
               table="student"
               type="delete"
               id={student._id}
               handleDelete={handleDeleteStudent}
               onSuccess={handleFormSuccess}
             />
+            </>
+            
           )}
         </div>
       </td>
@@ -154,16 +163,11 @@ const StudentlistPage = () => {
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Students</h1>
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
+        <h1 className="text-lg font-semibold">All Students</h1>
+        <div className="flex flex-col md:flex-row items-center gap-4 w-1/2 md:w-auto">
+          {/* <TableSearch /> */}
           <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-yPurple">
-              <Image src="/filter.png" alt="Filter" width={14} height={14} />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-yPurple">
-              <Image src="/sort.png" alt="Sort" width={14} height={14} />
-            </button>
+            
             {role === "admin" && <FormModal table="student" type="create" onSuccess={handleFormSuccess} />}
           </div>
         </div>
