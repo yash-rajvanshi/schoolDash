@@ -15,14 +15,14 @@ export const useAuth = () => {
     console.log(userData)
 
     if (!token || !userData) {
-      router.push('/sign-in');
+      router.push('/');
     } else {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
       } catch (err) {
         console.error('Failed to parse user:', err);
-        router.push('/sign-in');
+        router.push('/');
       }
     }
 
@@ -34,7 +34,7 @@ export const useAuth = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    router.push('/sign-in');
+    router.push('/');
   };
 
   return { loading, user, logout };

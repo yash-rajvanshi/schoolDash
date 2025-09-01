@@ -69,8 +69,6 @@ const AnnouncementsT = () => {
       <div className="bg-white p-4 rounded-md">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Announcements</h1>
-          <Link href='/list/announcements' className='text-xs text-gray-400'>View All</Link>
-          {/* <span className="text-xs text-gray-400">View All</span> */}
         </div>
         <div className="mt-4">
           <div className="animate-pulse">
@@ -87,7 +85,7 @@ const AnnouncementsT = () => {
     <div className="bg-white p-4 rounded-md">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Announcements</h1>
-        <span className="text-xs text-gray-400 cursor-pointer hover:text-gray-600">View All</span>
+        <Link href='/list/announcements' className='text-xs text-gray-400'>View All</Link>
       </div>
       <div className="flex flex-col gap-4 mt-4">
         {announcements.length === 0 ? (
@@ -96,7 +94,7 @@ const AnnouncementsT = () => {
           </div>
         ) : (
           announcements.map((announcement) => (
-            <div 
+            <Link href='/list/announcements'
               key={announcement._id} 
               className={`rounded-md p-4 ${getPriorityColor(announcement.priority)}`}
             >
@@ -121,12 +119,12 @@ const AnnouncementsT = () => {
                       key={index}
                       className="text-xs bg-white text-gray-600 px-2 py-1 rounded-md border"
                     >
-                      {className}
+                      {className+" "}
                     </span>
                   ))}
                 </div>
               )}
-            </div>
+            </Link>
           ))
         )}
       </div>
