@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -68,7 +69,8 @@ const AnnouncementsT = () => {
       <div className="bg-white p-4 rounded-md">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">Announcements</h1>
-          <span className="text-xs text-gray-400">View All</span>
+          <Link href='/list/announcements' className='text-xs text-gray-400'>View All</Link>
+          {/* <span className="text-xs text-gray-400">View All</span> */}
         </div>
         <div className="mt-4">
           <div className="animate-pulse">

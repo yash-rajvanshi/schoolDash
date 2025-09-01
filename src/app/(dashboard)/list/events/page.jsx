@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 import { PropagateLoader } from "react-spinners";
@@ -211,7 +210,6 @@ const EventListPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">All Events</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-1/2 md:w-auto">
-          <TableSearch entityType="event" onSearch={handleSearch} />
           <div className="flex items-center gap-4 self-end">
             
             {(role === "admin" || role === "teacher") && (

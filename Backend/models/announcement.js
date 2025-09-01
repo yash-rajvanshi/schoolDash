@@ -19,12 +19,12 @@ const AnnouncementSchema = new mongoose.Schema({
     type: Date, 
     required: true,
     default: Date.now,
-    validate: {
-      validator: function(v) {
-        return v <= new Date();
-      },
-      message: 'Announcement date cannot be in the future'
-    }
+    // validate: {
+    //   validator: function(v) {
+    //     return v  new Date();
+    //   },
+    //   message: 'Announcement date cannot be in the future'
+    // }
   },
   priority: {
     type: String,

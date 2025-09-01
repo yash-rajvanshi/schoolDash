@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
 import { PropagateLoader, PulseLoader } from "react-spinners";
