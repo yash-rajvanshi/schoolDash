@@ -72,58 +72,64 @@ const AssignmentForm = ({ type, data, onSuccess }) => {
   };
 
   return (
-    <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
-      <h1 className="text-xl font-semibold">Create a new Assignment</h1>
-      <span className="text-xs text-gray-400 font-medium">
-        Authentication Information
-      </span>
-      <div className="flex justify-between flex-wrap gap-4">
-        <InputField
-          label="Subject"
-          name="subject"
-          defaultValue={data?.subject}
-          register={register}
-          error={errors?.subject}
-        />
-        <InputField
-          label="Class"
-          name="class"
-          defaultValue={data?.class}
-          register={register}
-          error={errors?.class}
-        />
-        <InputField
-          label="Due Date"
-          name="dueDate"
-          defaultValue={data?.dueDate}
-          register={register}
-          error={errors.dueDate}
-          type="date"
-        />
-        <InputField
-          label="Teacher's Name"
-          name="teacher"
-          defaultValue={data?.teacher}
-          register={register}
-          error={errors.teacher}
-        />
+    <form className="flex flex-col gap-6 md:gap-8" onSubmit={handleSubmit(onSubmit)}>
+      <h1 className="text-lg md:text-xl font-semibold text-gray-800">
+        {type === "create" ? "Create New Assignment" : "Update Assignment"}
+      </h1>
+      
+      {/* Assignment Information */}
+      <div className="space-y-4">
+        <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">
+          Assignment Details
+        </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <InputField
+            label="Subject"
+            name="subject"
+            defaultValue={data?.subject}
+            register={register}
+            error={errors?.subject}
+            placeholder="Enter subject name"
+          />
+          <InputField
+            label="Class"
+            name="class"
+            defaultValue={data?.class}
+            register={register}
+            error={errors?.class}
+            placeholder="Enter class name"
+          />
+          <InputField
+            label="Due Date"
+            name="dueDate"
+            defaultValue={data?.dueDate}
+            register={register}
+            error={errors.dueDate}
+            type="date"
+          />
+          <InputField
+            label="Teacher's Name"
+            name="teacher"
+            defaultValue={data?.teacher}
+            register={register}
+            error={errors.teacher}
+            placeholder="Enter teacher name"
+          />
+        </div>
       </div>
 
-
-      {/* <button className="bg-blue-400 text-white p-2 rounded-md">
-        {type === "create" ? "Create" : "Update"}
-      </button> */}
-      <button
-        className={`bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed`}
-        type="submit"
-        disabled={submitting}
-      >
-        {submitting
-          ? "Submitting..."
-          : type === "create"
-          ? "Create"
-          : "Update"}
-      </button>
+      {/* Submit Button */}
+      <div className="flex justify-end pt-4">
+        <button
+          className={`bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-md font-medium text-sm md:text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+            submitting ? "opacity-60 cursor-not-allowed" : ""
+          }`}
+          type="submit"
+          disabled={submitting}
+        >
+          {submitting ? "Saving..." : type === "create" ? "Create Assignment" : "Update Assignment"}
+        </button>
+      </div>
     </form>
   );
 };

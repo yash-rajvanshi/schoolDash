@@ -1,12 +1,6 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import {
-  RadialBarChart,
-  RadialBar,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -34,58 +28,78 @@ const CountChart = () => {
 
   }, [])
 
-const data = [
-  {
-    name: "Girls",
-    count: val.female,
-    fill: "#FAE27C",
-  },
-  {
-    name: "Boys",
-    count: val.male,
-    fill: "#C3EBFA",
-  },
-];
+  const totalStudents = (val.male || 0) + (val.female || 0);
+  const malePercentage = totalStudents > 0 ? ((val.male || 0) / totalStudents) * 100 : 0;
+  const femalePercentage = totalStudents > 0 ? ((val.female || 0) / totalStudents) * 100 : 0;
+
   return (
-    <div className="bg-white rounded-xl w-full h-full p-4">
+    <div className="bg-white rounded-xl w-full h-full p-4 flex flex-col">
       {/* TITLE */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-lg font-semibold">Students</h1>
         <Image src="/moreDark.png" alt="" width={20} height={20} />
       </div>
-      {/* CHART */}
-      <div className="relative w-full h-[75%]">
-        <ResponsiveContainer>
-          <RadialBarChart
-            cx="50%"
-            cy="50%"
-            innerRadius="40%"
-            outerRadius="100%"
-            barSize={25}
-            data={data}
-          >
-            <RadialBar background dataKey="count" />
-          </RadialBarChart>
-        </ResponsiveContainer>
-        <Image
-          src="/maleFemale.png"
-          alt=""
-          width={30}
-          height={50}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        />
-      </div>
-      {/* BOTTOM */}
-      <div className="flex justify-center gap-16">
-        <div className="flex flex-col gap-1">
-          <div className="w-5 h-5 bg-lamaSky rounded-full" />
-          <h1 className="font-bold">{val.male}</h1>
-          <h2 className="text-xs text-gray-300">Boys ({((val.male / (val.female + val.male)) * 100).toFixed(2)}%)</h2>
+      
+      {/* CREATIVE VISUALIZATION */}
+      <div className="flex-1 flex flex-col justify-center items-center space-y-6">
+        {/* CENTRAL ICON */}
+        <div className="relative">
+          <Image
+            src="/maleFemale.png"
+            alt=""
+            width={40}
+            height={60}
+            className="z-10"
+          />
         </div>
-        <div className="flex flex-col gap-1">
-          <div className="w-5 h-5 bg-lamaYellow rounded-full" />
-          <h1 className="font-bold">{val.female}</h1>
-          <h2 className="text-xs text-gray-300">Girls ({((val.female / (val.female + val.male)) * 100).toFixed(2)}%)</h2>
+        
+        {/* PROGRESS BARS */}
+        <div className="w-full max-w-xs space-y-3">
+          {/* MALE PROGRESS BAR */}
+          <div className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Boys</span>
+              <span className="font-semibold">{val.male || 0}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div 
+                className="bg-lamaSky h-full rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${malePercentage}%` }}
+              />
+            </div>
+          </div>
+          
+          {/* FEMALE PROGRESS BAR */}
+          <div className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Girls</span>
+              <span className="font-semibold">{val.female || 0}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div 
+                className="bg-lamaYellow h-full rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${femalePercentage}%` }}
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* TOTAL COUNT */}
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-800">{totalStudents}</div>
+          <div className="text-sm text-gray-500">Total Students</div>
+        </div>
+      </div>
+      
+      {/* BOTTOM LEGEND */}
+      <div className="flex justify-center gap-8 mt-4">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-lamaSky rounded-full" />
+          <span className="text-sm text-gray-600">Boys ({malePercentage.toFixed(1)}%)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-lamaYellow rounded-full" />
+          <span className="text-sm text-gray-600">Girls ({femalePercentage.toFixed(1)}%)</span>
         </div>
       </div>
     </div>

@@ -110,7 +110,13 @@ const StudentlistPage = () => {
   const renderRow = (student) => (
     <tr key={student._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-ySkyLight">
       <td className="flex items-center gap-4 p-4">
-        <Image src={student.photo} alt="Student Photo" width={40} height={40} className="md:hidden xl:block w-10 h-10 rounded-full object-cover" />
+        <Image 
+          src={student.photo || "/avatar.png"} 
+          alt="Student Photo" 
+          width={40} 
+          height={40} 
+          className="md:hidden xl:block w-10 h-10 rounded-full object-cover" 
+        />
         <div className="flex flex-col">
           <h3 className="font-semibold">{student.firstName}</h3>
           <span className="text-gray-500 text-xs">{student.class}</span>

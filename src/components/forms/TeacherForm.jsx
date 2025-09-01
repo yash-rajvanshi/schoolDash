@@ -32,6 +32,7 @@ const schema = z.object({
     .string()
     .min(3, { message: "Username must be at least 3 characters long!" })
     .max(20, { message: "Username must be at most 20 characters long!" }),
+  teacherId: z.coerce.number().int().nonnegative().optional(),
   email: z.string().email({ message: "Invalid email address!" }),
   firstName: z.string().min(1, { message: "First name is required!" }),
   lastName: z.string().min(1, { message: "Last name is required!" }),
@@ -40,7 +41,6 @@ const schema = z.object({
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], { message: "Please select a valid blood type!" }),
   birthday: z.string().min(1, { message: "Birthday is required!" }),
   sex: z.enum(["male", "female", "OTHER"], { message: "Sex is required!" }),
-  photo: z.string().url({ message: "Image URL is required after upload!" }),
   // Both classes and subjects use array of strings
   classes: z
     .array(z.string())
@@ -53,7 +53,7 @@ const schema = z.object({
 /**
  * @param {{ type: "create" | "update", data?: any }} props
  */
-const TeacherForm = ({ type, data }) => {
+const TeacherForm = ({ type, data, onSuccess }) => {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [classes, setClasses] = useState([]); // Available classes from DB
@@ -64,22 +64,6 @@ const TeacherForm = ({ type, data }) => {
   
   const classDropdownRef = useRef(null);
   const subjectDropdownRef = useRef(null);
-  
-  // This is the key part for debugging - log the incoming data
-  useEffect(() => {
-    if (data) {
-      console.log("Incoming teacher data:", data);
-      // Log the specific class data format
-      console.log("Class data format:", data.classes);
-      
-      // Store initial subjects for later comparison during updates
-      const subjectIds = Array.isArray(data?.subjects) 
-        ? data.subjects.map(subj => typeof subj === 'object' && subj?._id ? subj?._id : subj)
-        : data?.subjects?.split(',').map(s => s.trim()) || [];
-      
-      setInitialSubjects(subjectIds);
-    }
-  }, [data]);
   
   const {
     register,
@@ -101,6 +85,30 @@ const TeacherForm = ({ type, data }) => {
         : data?.subjects?.split(',').map(s => s.trim()) || [],
     },
   });
+
+  // This is the key part for debugging - log the incoming data
+  useEffect(() => {
+    if (data) {
+      console.log("Incoming teacher data:", data);
+      // Log the specific class data format
+      console.log("Class data format:", data.classes);
+      
+      // Store initial subjects for later comparison during updates
+      const subjectIds = Array.isArray(data?.subjects) 
+        ? data.subjects.map(subj => typeof subj === 'object' && subj?._id ? subj?._id : subj)
+        : data?.subjects?.split(',').map(s => s.trim()) || [];
+      
+      setInitialSubjects(subjectIds);
+    }
+  }, [data]);
+
+  // Generate and set teacherId on component mount for new teachers
+  useEffect(() => {
+    if (type === "create" && !data?.teacherId) {
+      const generatedId = Math.floor(Math.random() * 1000000) + 100000;
+      setValue("teacherId", generatedId);
+    }
+  }, [type, data?.teacherId, setValue]);
 
   // Watch values to display selected items
   const selectedClasses = watch("classes") || [];
@@ -311,7 +319,7 @@ const TeacherForm = ({ type, data }) => {
       
       const payload = {
         ...values,
-        teacherId: Math.floor(Math.random() * 1000000) + 100000,
+        teacherId: values.teacherId || Math.floor(Math.random() * 1000000) + 100000,
         password: values.email + values.username,
       };
 
@@ -361,283 +369,401 @@ const TeacherForm = ({ type, data }) => {
     }
   };
 
-  return (
-    <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
-      <h1 className="text-xl font-semibold">
-        {type === "update" ? "Update Teacher" : "Create a new Teacher"}
-      </h1>
-      <span className="text-xs text-gray-400 font-medium">
-        Authentication Information
-      </span>
-      <div className="flex justify-between flex-wrap gap-4">
-        <InputField
-          label="Username"
-          name="username"
-          defaultValue={data?.username}
-          register={register}
-          error={errors?.username}
-        />
-        <InputField
-          label="Email"
-          name="email"
-          defaultValue={data?.email}
-          register={register}
-          error={errors?.email}
-        />
-      </div>
-
-      <span className="text-xs text-gray-400 font-medium">
-        Personal Information
-      </span>
-      <div className="flex justify-between flex-wrap gap-4">
-        <InputField
-          label="First Name"
-          name="firstName"
-          defaultValue={data?.firstName}
-          register={register}
-          error={errors.firstName}
-        />
-        <InputField
-          label="Last Name"
-          name="lastName"
-          defaultValue={data?.lastName}
-          register={register}
-          error={errors.lastName}
-        />
+      return (
+      <div className="max-w-6xl mx-auto p-3 md:p-6">
+        <form className="space-y-6 md:space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        {/* Header */}
+        <div className="text-center border-b border-gray-200 pb-4 md:pb-6">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
+            {type === "create" ? "Create New Teacher" : "Update Teacher Information"}
+          </h1>
+          <p className="text-gray-600 mt-2 text-sm md:text-base">Fill in the teacher details below</p>
+        </div>
         
-        {/* Multi-select dropdown for classes */}
-        <div className="flex flex-col w-[48%] relative" ref={classDropdownRef}>
-          <label className="font-medium text-sm text-gray-700 mb-1">
-            Classes
-          </label>
-          <div 
-            className="border border-gray-300 rounded-md p-2 min-h-10 cursor-pointer flex flex-wrap gap-1"
-            onClick={() => setClassDropdownOpen(!classDropdownOpen)}
-          >
-            {selectedClasses.length > 0 ? (
-              selectedClasses.map((classId) => (
-                <div 
-                  key={classId} 
-                  className="bg-blue-100 text-blue-800 rounded px-2 py-1 text-sm flex items-center"
-                >
-                  {getClassName(classId)}
-                  <button
-                    type="button"
-                    className="ml-1 text-blue-600 hover:text-blue-800"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeClass(classId);
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))
-            ) : (
-              <span className="text-gray-500">Select classes</span>
-            )}
+        {/* Authentication Information Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <span className="text-blue-600 font-semibold text-sm">1</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Authentication Information</h2>
           </div>
           
-          {classDropdownOpen && (
-            <div className="absolute z-10 w-full mt-12 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-              {classes.map((cls) => (
-                <div
-                  key={cls._id}
-                  className={`p-2 hover:bg-gray-100 cursor-pointer ${
-                    selectedClasses.includes(cls._id) ? "bg-blue-50" : ""
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleClass(cls._id);
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedClasses.includes(cls._id)}
-                    onChange={() => {}}
-                    className="mr-2"
-                  />
-                  {cls.name}
-                </div>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Username</label>
+              <input
+                {...register("username")}
+                defaultValue={data?.username}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter username"
+              />
+              {errors?.username && (
+                <p className="text-sm text-red-600">{errors.username.message}</p>
+              )}
             </div>
-          )}
-          
-          {/* Hidden input for form validation */}
-          <input 
-            type="hidden" 
-            name="classes" 
-            value={selectedClasses} 
-            {...register("classes")} 
-          />
-          
-          {errors?.classes && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.classes.message}
-            </p>
-          )}
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                {...register("email")}
+                defaultValue={data?.email}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter email"
+              />
+              {errors?.email && (
+                <p className="text-sm text-red-600">{errors.email.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Teacher ID</label>
+              <input
+                {...register("teacherId")}
+                defaultValue={data?.teacherId}
+                readOnly
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                placeholder="Auto-generated"
+              />
+              {errors?.teacherId && (
+                <p className="text-sm text-red-600">{errors.teacherId.message}</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Multi-select dropdown for subjects */}
-        <div className="flex flex-col w-[48%] relative" ref={subjectDropdownRef}>
-          <label className="font-medium text-sm text-gray-700 mb-1">
-            Subjects
-          </label>
-          <div 
-            className="border border-gray-300 rounded-md p-2 min-h-10 cursor-pointer flex flex-wrap gap-1"
-            onClick={() => setSubjectDropdownOpen(!subjectDropdownOpen)}
-          >
-            {selectedSubjects.length > 0 ? (
-              selectedSubjects.map((subjectId) => (
-                <div 
-                  key={subjectId} 
-                  className="bg-green-100 text-green-800 rounded px-2 py-1 text-sm flex items-center"
-                >
-                  {getSubjectName(subjectId)}
-                  <button
-                    type="button"
-                    className="ml-1 text-green-600 hover:text-green-800"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeSubject(subjectId);
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))
-            ) : (
-              <span className="text-gray-500">Select subjects</span>
-            )}
+        {/* Personal Information Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <span className="text-purple-600 font-semibold text-sm">2</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Personal Information</h2>
           </div>
           
-          {subjectDropdownOpen && (
-            <div className="absolute z-10 w-full mt-12 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-              {subjects.map((subject) => (
-                <div
-                  key={subject._id}
-                  className={`p-2 hover:bg-gray-100 cursor-pointer ${
-                    selectedSubjects.includes(subject._id) ? "bg-green-50" : ""
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleSubject(subject._id);
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSubjects.includes(subject._id)}
-                    onChange={() => {}}
-                    className="mr-2"
-                  />
-                  {subject.name}
-                </div>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">First Name</label>
+              <input
+                {...register("firstName")}
+                defaultValue={data?.firstName}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter first name"
+              />
+              {errors.firstName && (
+                <p className="text-sm text-red-600">{errors.firstName.message}</p>
+              )}
             </div>
-          )}
-          
-          {/* Hidden input for form validation */}
-          <input 
-            type="hidden" 
-            name="subjects" 
-            value={selectedSubjects} 
-            {...register("subjects")} 
-          />
-          
-          {errors?.subjects && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.subjects.message}
-            </p>
-          )}
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Last Name</label>
+              <input
+                {...register("lastName")}
+                defaultValue={data?.lastName}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter last name"
+              />
+              {errors.lastName && (
+                <p className="text-sm text-red-600">{errors.lastName.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Phone</label>
+              <input
+                {...register("phone")}
+                defaultValue={data?.phone}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter phone number"
+              />
+              {errors.phone && (
+                <p className="text-sm text-red-600">{errors.phone.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2 md:col-span-2 lg:col-span-3">
+              <label className="text-sm font-medium text-gray-700">Address</label>
+              <textarea
+                {...register("address")}
+                defaultValue={data?.address}
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                placeholder="Enter full address"
+              />
+              {errors.address && (
+                <p className="text-sm text-red-600">{errors.address.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Blood Type</label>
+              <select
+                {...register("bloodType")}
+                defaultValue={data?.bloodType}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="">Select Blood Type</option>
+                {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+              {errors.bloodType && (
+                <p className="text-sm text-red-600">{errors.bloodType.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Birthday</label>
+              <input
+                type="date"
+                {...register("birthday")}
+                defaultValue={data?.birthday}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+              {errors.birthday && (
+                <p className="text-sm text-red-600">{errors.birthday.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Sex</label>
+              <select
+                {...register("sex")}
+                defaultValue={data?.sex}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="">Select Sex</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="OTHER">Other</option>
+              </select>
+              {errors.sex && (
+                <p className="text-sm text-red-600">{errors.sex.message}</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        <InputField
-          label="Phone"
-          name="phone"
-          defaultValue={data?.phone}
-          register={register}
-          error={errors.phone}
-        />
-        <InputField
-          label="Address"
-          name="address"
-          defaultValue={data?.address}
-          register={register}
-          error={errors.address}
-        />
-        <InputField
-          label="Blood Type"
-          name="bloodType"
-          defaultValue={data?.bloodType}
-          register={register}
-          error={errors.bloodType}
-        />
-        <InputField
-          label="Birthday"
-          name="birthday"
-          defaultValue={data?.birthday}
-          register={register}
-          error={errors.birthday}
-          type="date"
-        />
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Sex</label>
-          <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("sex")}
-            defaultValue={data?.sex}
-          >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="OTHER">Other</option>
-          </select>
-          {errors.sex?.message && (
-            <p className="text-xs text-red-400">
-              {errors.sex.message.toString()}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-col gap-2 w-full md:w-1/4 justify-center">
-          <label
-            className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-            htmlFor="photo"
-          >
-            <Image src="/upload.png" alt="" width={28} height={28} />
-            <span>Upload a photo</span>
-          </label>
-          <input
-            type="file"
-            onChange={async (e) => {
-              const file = e.target.files[0];
-              if (file) {
-                setUploading(true);
-                const uploadedUrl = await uploadToCloudinary(file);
-                setValue("photo", uploadedUrl);
-                setUploading(false);
-              }
-            }}
-          />
-          <input type="hidden" {...register("photo")} />
-          {errors.photo?.message && (
-            <p className="text-xs text-red-400">
-              {errors.photo.message.toString()}
-            </p>
-          )}
-        </div>
-      </div>
+        {/* Teaching Assignment Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <span className="text-green-600 font-semibold text-sm">3</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Teaching Assignment</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Multi-select dropdown for classes */}
+            <div className="space-y-2 relative" ref={classDropdownRef}>
+              <label className="text-sm font-medium text-gray-700">Classes</label>
+              <div 
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer flex flex-wrap gap-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 min-h-[48px]"
+                onClick={() => setClassDropdownOpen(!classDropdownOpen)}
+              >
+                {selectedClasses.length > 0 ? (
+                  selectedClasses.map((classId) => (
+                    <div 
+                      key={classId} 
+                      className="bg-blue-100 text-blue-800 rounded-md px-3 py-1 text-sm flex items-center gap-1"
+                    >
+                      <span>{getClassName(classId)}</span>
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:text-blue-800 font-bold"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeClass(classId);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-gray-500">Select classes</span>
+                )}
+              </div>
+              
+              {classDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {classes.map((cls) => (
+                    <div
+                      key={cls._id}
+                      className={`p-3 hover:bg-gray-100 cursor-pointer transition-colors duration-200 ${
+                        selectedClasses.includes(cls._id) ? "bg-blue-50" : ""
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleClass(cls._id);
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedClasses.includes(cls._id)}
+                          onChange={() => {}}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm">{cls.name}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Hidden input for form validation */}
+              <input 
+                type="hidden" 
+                name="classes" 
+                value={selectedClasses} 
+                {...register("classes")} 
+              />
+              
+              {errors?.classes && (
+                <p className="text-sm text-red-600">{errors.classes.message}</p>
+              )}
+            </div>
 
-      <button
-        className={`bg-blue-400 text-white p-2 rounded-md ${
-          uploading || submitting ? "opacity-60 cursor-not-allowed" : ""
-        }`}
-        type="submit"
-        disabled={uploading || submitting}
-      >
-        {uploading ? "Uploading..." : 
-         submitting ? "Saving..." :
-         type === "create" ? "Create" : "Update"}
-      </button>
-    </form>
+            {/* Multi-select dropdown for subjects */}
+            <div className="space-y-2 relative" ref={subjectDropdownRef}>
+              <label className="text-sm font-medium text-gray-700">Subjects</label>
+              <div 
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer flex flex-wrap gap-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 min-h-[48px]"
+                onClick={() => setSubjectDropdownOpen(!subjectDropdownOpen)}
+              >
+                {selectedSubjects.length > 0 ? (
+                  selectedSubjects.map((subjectId) => (
+                    <div 
+                      key={subjectId} 
+                      className="bg-green-100 text-green-800 rounded-md px-3 py-1 text-sm flex items-center gap-1"
+                    >
+                      <span>{getSubjectName(subjectId)}</span>
+                      <button
+                        type="button"
+                        className="text-green-600 hover:text-green-800 font-bold"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeSubject(subjectId);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-gray-500">Select subjects</span>
+                )}
+              </div>
+              
+              {subjectDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {subjects.map((subject) => (
+                    <div
+                      key={subject._id}
+                      className={`p-3 hover:bg-gray-100 cursor-pointer transition-colors duration-200 ${
+                        selectedSubjects.includes(subject._id) ? "bg-green-50" : ""
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSubject(subject._id);
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedSubjects.includes(subject._id)}
+                          onChange={() => {}}
+                          className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm">{subject.name}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Hidden input for form validation */}
+              <input 
+                type="hidden" 
+                name="subjects" 
+                value={selectedSubjects} 
+                {...register("subjects")} 
+              />
+              
+              {errors?.subjects && (
+                <p className="text-sm text-red-600">{errors.subjects.message}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Photo Upload Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+              <span className="text-orange-600 font-semibold text-sm">4</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Profile Photo</h2>
+          </div>
+          
+          <div className="max-w-md">
+            <label
+              className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
+              htmlFor="photo"
+            >
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <Image src="/upload.png" alt="" width={32} height={32} className="w-8 h-8 mb-2 text-gray-500" />
+                <p className="mb-2 text-sm text-gray-500">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 10MB)</p>
+              </div>
+              <input
+                type="file"
+                id="photo"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setUploading(true);
+                    try {
+                      const uploadedUrl = await uploadToCloudinary(file);
+                      setValue("photo", uploadedUrl);
+                    } catch (error) {
+                      console.error("Upload error:", error);
+                    } finally {
+                      setUploading(false);
+                    }
+                  }
+                }}
+                className="hidden"
+              />
+            </label>
+            <input type="hidden" {...register("photo")} />
+            {errors.photo && (
+              <p className="text-sm text-red-600 mt-2">{errors.photo.message}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end pt-4 md:pt-6">
+          <button
+            className={`bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+              uploading || submitting ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+            type="submit"
+            disabled={uploading || submitting}
+          >
+            {uploading ? "Uploading..." : 
+             submitting ? "Saving..." :
+             type === "create" ? "Create Teacher" : "Update Teacher"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

@@ -83,11 +83,23 @@ const AnnouncementListPage = () => {
     fetchAnnouncementsFromApi(page, limit, setAnnouncements, setTotalPages, setLoading);
   };
 
+  // Format date for better readability
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short'
+    });
+  };
+
   const renderRow = (item) => (
     <tr key={item._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="p-4">{item.title}</td>
       <td>{item.classes}</td>
-      <td className="hidden md:table-cell">{new Date(item.date).toLocaleDateString()}</td>
+      <td className="hidden md:table-cell">{formatDate(item.date)}</td>
       <td>
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher" ) && (

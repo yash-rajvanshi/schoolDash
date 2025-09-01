@@ -32,6 +32,25 @@ const EventCalendar = () => {
     fetchEvents();
   }, []);
 
+  // Format time for display
+  const formatTime = (timeString) => {
+    if (!timeString) return "N/A";
+    
+    // If timeString is already in HH:MM format, return it as is
+    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(timeString)) {
+      return timeString;
+    }
+    
+    // Otherwise, parse as Date and format
+    try {
+      const date = new Date(timeString);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      console.error("Error formatting time:", e);
+      return timeString; // Return original if parsing fails
+    }
+  };
+
   return (
     <div className="bg-white p-4 rounded-md">
       <Calendar onChange={onChange} value={value} />
@@ -59,7 +78,7 @@ const EventCalendar = () => {
               <div className="flex items-center justify-between">
                 <h1 className="font-semibold text-gray-600">{event.title}</h1>
                 <span className="text-gray-300 text-xs">
-                  {event.startTime} - {event.endTime}
+                  {formatTime(event.startTime)} - {formatTime(event.endTime)}
                 </span>
               </div>
               <p className="mt-2 text-gray-400 text-sm">

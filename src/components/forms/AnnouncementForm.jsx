@@ -99,98 +99,136 @@ const AnnouncementForm = ({ type, data, onSuccess }) => {
     }
   };
 
-  return (
-    <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
-      <h1 className="text-xl font-semibold">
-        {type === "update" ? "Update Announcement" : "Create a new Announcement"}
-      </h1>
-      <span className="text-xs text-gray-400 font-medium">
-        Announcement Information
-      </span>
-      
-      <div className="flex flex-col gap-6">
-        <InputField
-          label="Title"
-          name="title"
-          register={register}
-          error={errors?.title}
-          placeholder="Enter announcement title"
-        />
+      return (
+      <div className="max-w-4xl mx-auto p-3 md:p-6">
+        <form className="space-y-6 md:space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        {/* Header */}
+        <div className="text-center border-b border-gray-200 pb-4 md:pb-6">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
+            {type === "create" ? "Create New Announcement" : "Update Announcement"}
+          </h1>
+          <p className="text-gray-600 mt-2 text-sm md:text-base">Share important information with the school community</p>
+        </div>
         
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">
-            Content <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            {...register("content")}
-            className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors?.content ? "border-red-500" : "border-gray-300"
-            }`}
-            rows={4}
-            placeholder="Enter announcement content (10-2000 characters)"
-          />
-          {errors?.content && (
-            <span className="text-xs text-red-500">{errors.content.message}</span>
-          )}
+        {/* Basic Information Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <span className="text-blue-600 font-semibold text-sm">1</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Title</label>
+              <input
+                {...register("title")}
+                defaultValue={data?.title}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter announcement title"
+              />
+              {errors?.title && (
+                <p className="text-sm text-red-600">{errors.title.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Priority Level</label>
+              <select
+                {...register("priority")}
+                defaultValue={data?.priority || "medium"}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+              {errors.priority?.message && (
+                <p className="text-sm text-red-600">{errors.priority.message}</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="flex justify-between flex-wrap gap-4">
-          <InputField
-            label="Classes (comma-separated)"
-            name="classes"
-            register={register}
-            error={errors?.classes}
-            placeholder="e.g., Class 10A, Class 10B"
-          />
+        {/* Date and Target Classes Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <span className="text-green-600 font-semibold text-sm">2</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Date & Target Classes</h2>
+          </div>
           
-          <div className="flex flex-col gap-2 min-w-[200px]">
-            <label className="text-sm font-medium text-gray-700">
-              Priority <span className="text-red-500">*</span>
-            </label>
-            <select
-              {...register("priority")}
-              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors?.priority ? "border-red-500" : "border-gray-300"
-              }`}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-            {errors?.priority && (
-              <span className="text-xs text-red-500">{errors.priority.message}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Date</label>
+              <input
+                type="date"
+                {...register("date")}
+                defaultValue={data?.date ? new Date(data.date).toISOString().split('T')[0] : ''}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+              {errors?.date && (
+                <p className="text-sm text-red-600">{errors.date.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Target Classes</label>
+              <input
+                {...register("classes")}
+                defaultValue={data?.classes?.join(", ")}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="e.g., 1A, 2B, 3C (comma separated)"
+              />
+              <p className="text-xs text-gray-500">Enter class names separated by commas, or leave empty for all classes</p>
+              {errors?.classes && (
+                <p className="text-sm text-red-600">{errors.classes.message}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <span className="text-purple-600 font-semibold text-sm">3</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Announcement Content</h2>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Content</label>
+            <textarea
+              {...register("content")}
+              rows={8}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+              placeholder="Enter the announcement content here..."
+              defaultValue={data?.content}
+            />
+            {errors.content?.message && (
+              <p className="text-sm text-red-600">{errors.content.message}</p>
             )}
           </div>
-          
-          <InputField
-            label="Date"
-            name="date"
-            register={register}
-            error={errors.date}
-            type="date"
-          />
         </div>
 
-        {currentUser && (
-          <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
-            <strong>Author:</strong> {currentUser.name || currentUser.email || 'Unknown User'}
-          </div>
-        )}
-      </div>
-
-      <button
-        className={`bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-medium`}
-        type="submit"
-        disabled={submitting}
-      >
-        {submitting
-          ? "Submitting..."
-          : type === "update"
-            ? "Update Announcement"
-            : "Create Announcement"}
-      </button>
-    </form>
+        {/* Submit Button */}
+        <div className="flex justify-end pt-4 md:pt-6">
+          <button
+            className={`bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+              submitting ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+            type="submit"
+            disabled={submitting}
+          >
+            {submitting ? "Saving..." : type === "create" ? "Create Announcement" : "Update Announcement"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

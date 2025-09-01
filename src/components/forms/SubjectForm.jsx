@@ -255,108 +255,135 @@ const SubjectForm = ({ type, data, onSuccess }) => {
     };
 
     return (
-      <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
-        <h1 className="text-xl font-semibold">
-          {type === "update" ? "Update Subject" : "Create a new Subject"}
-        </h1>
-        <span className="text-xs text-gray-400 font-medium">
-          Subject Information
-        </span>
-        <div className="flex justify-between flex-wrap gap-4">
-          <InputField
-            label="Subject Name"
-            name="name"
-            defaultValue={data?.name}
-            register={register}
-            error={errors?.name}
-          />
+      <div className="max-w-4xl mx-auto p-3 md:p-6">
+        <form className="space-y-6 md:space-y-8" onSubmit={handleSubmit(onSubmit)}>
+          {/* Header */}
+          <div className="text-center border-b border-gray-200 pb-4 md:pb-6">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
+              {type === "create" ? "Create New Subject" : "Update Subject"}
+            </h1>
+            <p className="text-gray-600 mt-2 text-sm md:text-base">Define subject details and assign teachers</p>
+          </div>
           
-          {/* Multi-select dropdown for teachers */}
-          <div className="flex flex-col w-[48%] relative" ref={teacherDropdownRef}>
-            <label className="font-medium text-sm text-gray-700 mb-1">
-              Teachers
-            </label>
-            <div 
-              className="border border-gray-300 rounded-md p-2 min-h-10 cursor-pointer flex flex-wrap gap-1"
-              onClick={() => setTeacherDropdownOpen(!teacherDropdownOpen)}
-            >
-              {selectedTeachers.length > 0 ? (
-                selectedTeachers.map((_id) => (
-                  <div 
-                    key={_id} 
-                    className="bg-blue-100 text-blue-800 rounded px-2 py-1 text-sm flex items-center"
-                  >
-                    {getTeacherName(_id)}
-                    <button
-                      type="button"
-                      className="ml-1 text-blue-600 hover:text-blue-800"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeTeacher(_id);
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <span className="text-gray-500">Select teachers</span>
-              )}
+          {/* Subject Information Section */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 font-semibold text-sm">1</span>
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">Subject Details</h2>
             </div>
             
-            {teacherDropdownOpen && (
-              <div className="absolute z-10 w-full mt-12 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                {teachers.map((teacher) => (
-                  <div
-                    key={teacher._id}
-                    className={`p-2 hover:bg-gray-100 cursor-pointer ${
-                      selectedTeachers.includes(teacher._id) ? "bg-blue-50" : ""
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleTeacher(teacher._id);
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedTeachers.includes(teacher._id)}
-                      onChange={() => {}}
-                      className="mr-2"
-                    />
-                    {teacher.firstName} {teacher.lastName}
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Hidden input for form validation */}
-            <input 
-              type="hidden" 
-              name="teachers" 
-              value={selectedTeachers} 
-              {...register("teachers")} 
-            />
-            
-            {errors?.teachers && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.teachers.message}
-              </p>
-            )}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Subject Name</label>
+              <input
+                {...register("name")}
+                defaultValue={data?.name}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter subject name (e.g., Mathematics, English, Science)"
+              />
+              {errors?.name && (
+                <p className="text-sm text-red-600">{errors.name.message}</p>
+              )}
+            </div>
           </div>
-        </div>
 
-        <button
-          className={`bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed`}
-          type="submit"
-          disabled={submitting}
-        >
-          {submitting
-            ? "Submitting..."
-            : type === "update"
-            ? "Update"
-            : "Create"}
-        </button>
-      </form>
+          {/* Teacher Assignment Section */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 font-semibold text-sm">2</span>
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">Teacher Assignment</h2>
+            </div>
+            
+            <div className="space-y-2 relative" ref={teacherDropdownRef}>
+              <label className="text-sm font-medium text-gray-700">Assigned Teachers</label>
+              <div 
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer flex flex-wrap gap-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 min-h-[48px]"
+                onClick={() => setTeacherDropdownOpen(!teacherDropdownOpen)}
+              >
+                {selectedTeachers.length > 0 ? (
+                  selectedTeachers.map((_id) => (
+                    <div 
+                      key={_id} 
+                      className="bg-blue-100 text-blue-800 rounded-md px-3 py-1 text-sm flex items-center gap-1"
+                    >
+                      <span>{getTeacherName(_id)}</span>
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:text-blue-800 font-bold"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeTeacher(_id);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-gray-500">Select teachers for this subject</span>
+                )}
+              </div>
+              
+              {teacherDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {teachers.map((teacher) => (
+                    <div
+                      key={teacher._id}
+                      className={`p-3 hover:bg-gray-100 cursor-pointer transition-colors duration-200 ${
+                        selectedTeachers.includes(teacher._id) ? "bg-blue-50" : ""
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTeacher(teacher._id);
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedTeachers.includes(teacher._id)}
+                          onChange={() => {}}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm">
+                          {teacher.firstName} {teacher.lastName}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Hidden input for form validation */}
+              <input 
+                type="hidden" 
+                name="teachers" 
+                value={selectedTeachers} 
+                {...register("teachers")} 
+              />
+              
+              {errors?.teachers && (
+                <p className="text-sm text-red-600">{errors.teachers.message}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end pt-4 md:pt-6">
+            <button
+              className={`bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                submitting ? "opacity-60 cursor-not-allowed" : ""
+              }`}
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? "Saving..." : type === "create" ? "Create Subject" : "Update Subject"}
+            </button>
+          </div>
+        </form>
+      </div>
     );
 };
 

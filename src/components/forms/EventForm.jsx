@@ -98,19 +98,6 @@ const EventForm = ({ type, data, onSuccess }) => {
 
       console.log("Final Payload: ", payload);
 
-      // Validate time format before sending
-      const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-      if (!timeRegex.test(payload.startTime)) {
-        //alert('Start time must be in HH:MM format (e.g., 14:30)');
-        setSubmitting(false);
-        return;
-      }
-      if (!timeRegex.test(payload.endTime)) {
-        //alert('End time must be in HH:MM format (e.g., 15:30)');
-        setSubmitting(false);
-        return;
-      }
-
       const url =
         type === "update"
           ? `${API_BASE_URL}/api/event/${data?._id}`
@@ -125,14 +112,13 @@ const EventForm = ({ type, data, onSuccess }) => {
       });
 
       if (response.ok) {
-        const result = await response.json();
         if (onSuccess) {
-          onSuccess(result);
+          onSuccess();
         }
         if (type !== "update") reset();
-        //alert(`Event ${type === "update" ? "updated" : "created"} successfully!`);
       } else {
         const errorData = await response.json();
+        console.error("Error response:", errorData);
         //alert(`Error: ${errorData.error || 'Failed to save event'}`);
       }
     } catch (error) {
@@ -143,133 +129,193 @@ const EventForm = ({ type, data, onSuccess }) => {
     }
   };
 
-  return (
-    <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
-      <h1 className="text-xl font-semibold">
-        {type === "update" ? "Update Event" : "Create a new Event"}
-      </h1>
-      <span className="text-xs text-gray-400 font-medium">
-        Event Information
-      </span>
-
-      <div className="flex flex-col gap-6">
-        <InputField
-          label="Title"
-          name="title"
-          register={register}
-          error={errors?.title}
-          placeholder="Enter event title"
-        />
-
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">
-            Description (Optional)
-          </label>
-          <textarea
-            {...register("description")}
-            className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors?.description ? "border-red-500" : "border-gray-300"
-              }`}
-            rows={3}
-            placeholder="Enter event description (max 1000 characters)"
-          />
-          {errors?.description && (
-            <span className="text-xs text-red-500">{errors.description.message}</span>
-          )}
+      return (
+      <div className="max-w-4xl mx-auto p-3 md:p-6">
+        <form className="space-y-6 md:space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        {/* Header */}
+        <div className="text-center border-b border-gray-200 pb-4 md:pb-6">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
+            {type === "create" ? "Create New Event" : "Update Event"}
+          </h1>
+          <p className="text-gray-600 mt-2 text-sm md:text-base">Schedule and manage school events</p>
         </div>
-
-        <div className="flex justify-between flex-wrap gap-4">
-          <InputField
-            label="Date"
-            name="date"
-            type="date"
-            register={register}
-            error={errors?.date}
-          />
-
-          <InputField
-            label="Start Time"
-            name="startTime"
-            type="time"
-            register={register}
-            error={errors?.startTime}
-          />
-
-          <InputField
-            label="End Time"
-            name="endTime"
-            type="time"
-            register={register}
-            error={errors?.endTime}
-          />
-        </div>
-
-        <div className="flex justify-between flex-wrap gap-4">
-          <InputField
-            label="Location (Optional)"
-            name="location"
-            register={register}
-            error={errors?.location}
-            placeholder="Enter event location"
-          />
-
-          <div className="flex flex-col gap-2 min-w-[200px]">
-            <label className="text-sm font-medium text-gray-700">
-              Event Type <span className="text-red-500">*</span>
-            </label>
-            <select
-              {...register("eventType")}
-              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors?.eventType ? "border-red-500" : "border-gray-300"
-                }`}
-            >
-              <option value="academic">Academic</option>
-              <option value="sports">Sports</option>
-              <option value="cultural">Cultural</option>
-              <option value="other">Other</option>
-            </select>
-            {errors?.eventType && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.eventType.message}
-              </p>
-            )}
+        
+        {/* Basic Information Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <span className="text-blue-600 font-semibold text-sm">1</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
           </div>
-
-          {/* Dropdown for class selection */}
-          <div className="flex flex-col gap-2 min-w-[200px]">
-            <label className="text-sm font-medium text-gray-700">
-              Class (Optional)
-            </label>
-            <select
-              {...register("classId")}
-              className="border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select Class</option>
-              {classes.map((classItem) => (
-                <option key={classItem._id} value={classItem._id}>
-                  {classItem.name}
-                </option>
-              ))}
-            </select>
-            {errors?.classId && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.classId.message}
-              </p>
-            )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Event Title</label>
+              <input
+                {...register("title")}
+                defaultValue={data?.title}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter event title"
+              />
+              {errors?.title && (
+                <p className="text-sm text-red-600">{errors.title.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Event Type</label>
+              <select
+                {...register("eventType")}
+                defaultValue={data?.eventType || "other"}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="academic">Academic</option>
+                <option value="sports">Sports</option>
+                <option value="cultural">Cultural</option>
+                <option value="other">Other</option>
+              </select>
+              {errors.eventType?.message && (
+                <p className="text-sm text-red-600">{errors.eventType.message}</p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <button
-        className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-medium"
-        type="submit"
-        disabled={submitting}
-      >
-        {submitting
-          ? "Submitting..."
-          : type === "update"
-            ? "Update Event"
-            : "Create Event"}
-      </button>
-    </form>
+        {/* Date and Time Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <span className="text-green-600 font-semibold text-sm">2</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Date & Time</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Date</label>
+              <input
+                type="date"
+                {...register("date")}
+                defaultValue={data?.date ? new Date(data.date).toISOString().split('T')[0] : ''}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+              {errors?.date && (
+                <p className="text-sm text-red-600">{errors.date.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Start Time</label>
+              <input
+                type="time"
+                {...register("startTime")}
+                defaultValue={data?.startTime}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+              {errors?.startTime && (
+                <p className="text-sm text-red-600">{errors.startTime.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">End Time</label>
+              <input
+                type="time"
+                {...register("endTime")}
+                defaultValue={data?.endTime}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              />
+              {errors?.endTime && (
+                <p className="text-sm text-red-600">{errors.endTime.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Location</label>
+              <input
+                {...register("location")}
+                defaultValue={data?.location}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                placeholder="Event location (optional)"
+              />
+              {errors?.location && (
+                <p className="text-sm text-red-600">{errors.location.message}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Target Class Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <span className="text-purple-600 font-semibold text-sm">3</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Target Class</h2>
+          </div>
+          
+          <div className="max-w-md">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Target Class (Optional)</label>
+              <select
+                {...register("classId")}
+                defaultValue={data?.classId || ""}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              >
+                <option value="">All Classes</option>
+                {classes.map((cls) => (
+                  <option key={cls._id} value={cls._id}>
+                    {cls.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500">Select a specific class or leave empty for all classes</p>
+              {errors.classId?.message && (
+                <p className="text-sm text-red-600">{errors.classId.message}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Description Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+              <span className="text-orange-600 font-semibold text-sm">4</span>
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Event Description</h2>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              {...register("description")}
+              rows={6}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+              placeholder="Enter event description (optional)"
+              defaultValue={data?.description}
+            />
+            {errors.description?.message && (
+              <p className="text-sm text-red-600">{errors.description.message}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end pt-4 md:pt-6">
+          <button
+            className={`bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium text-base transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+              submitting ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+            type="submit"
+            disabled={submitting}
+          >
+            {submitting ? "Saving..." : type === "create" ? "Create Event" : "Update Event"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

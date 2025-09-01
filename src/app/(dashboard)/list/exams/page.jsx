@@ -99,6 +99,34 @@ const ExamListPage = () => {
     fetchExamsFromApi(page, limit, setExams, setTotalPages, setLoading);
   };
 
+  // Format date for better readability
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return "Today";
+    } else if (diffDays === 1) {
+      return "Tomorrow";
+    } else if (diffDays < 7) {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      });
+    } else {
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        weekday: 'short'
+      });
+    }
+  };
+
   const renderRow = (item) => (
     <tr key={item._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="p-4">{item.title}</td>
@@ -109,7 +137,7 @@ const ExamListPage = () => {
           ? `${item.teacherId.firstName} ${item.teacherId.lastName}` 
           : 'N/A'}
       </td>
-      <td className="hidden md:table-cell">{new Date(item.date).toLocaleDateString()}</td>
+      <td className="hidden md:table-cell">{formatDate(item.date)}</td>
       <td>
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher" ) && (

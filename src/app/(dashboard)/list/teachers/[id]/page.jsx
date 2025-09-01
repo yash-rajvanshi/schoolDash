@@ -58,7 +58,7 @@ const SingleTeacherPage = () => {
           <div className='bg-ySky py-6 px-4 rounded-md flex-1 flex gap-4'>
             <div className='w-1/3'>
               <Image
-                src={teacher?.photo || "/default-user.png"}
+                src={teacher?.photo || "/avatar.png"}
                 alt={teacher?.firstName || "Teacher Photo"}
                 width={144}
                 height={144}
