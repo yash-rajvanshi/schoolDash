@@ -38,7 +38,7 @@ app.use('/api/', limiter);
 // CORS configuration
 app.use(cors({
   origin: [
-    'http://localhost:3001', 
+    'http://localhost:3000', 
     'https://scholio-yash-rajvanshis-projects.vercel.app',
     'https://scholio.vercel.app',
     // 'https://backend-dashboard-l273.onrender.com'

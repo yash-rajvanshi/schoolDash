@@ -8,6 +8,7 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from '@/app/hooks/useAuthHook'; //for role
+import { PropagateLoader } from "react-spinners";
 // import fetchWithAuth from "@/app/lib/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -74,15 +75,15 @@ const StudentlistPage = () => {
       });
 
       if (response.ok) {
-        alert("Student created successfully!");
+        //alert("Student created successfully!");
         fetchStudentsFromApi(page, limit, setStudents, setTotalPages, setLoading);
       } else {
         const errData = await response.json();
-        alert(errData.error || "Failed to create student.");
+        //alert(errData.error || "Failed to create student.");
       }
     } catch (error) {
       console.error("Error creating student:", error);
-      alert("An error occurred while creating the student.");
+      //alert("An error occurred while creating the student.");
     }
   };
 
@@ -173,7 +174,17 @@ const StudentlistPage = () => {
         </div>
       </div>
 
-      {loading ? <p>Loading students...</p> : <Table columns={columns} renderRow={renderRow} data={students} />}
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <PropagateLoader
+            color="#6366f1" // Using a more visible color (indigo)
+            cssOverride={{}}
+            loading
+            size={10}
+            speedMultiplier={1}
+          />
+        </div>
+      ): <Table columns={columns} renderRow={renderRow} data={students} />}
 
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
     </div>

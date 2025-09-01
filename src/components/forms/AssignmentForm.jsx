@@ -58,14 +58,14 @@ const AssignmentForm = ({ type, data, onSuccess }) => {
           onSuccess(result);
         }
         if (type !== "update") reset();
-        alert(`Assignment ${type === "update" ? "updated" : "created"} successfully!`);
+        //alert(`Assignment ${type === "update" ? "updated" : "created"} successfully!`);
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.error || 'Failed to save assignment'}`);
+        //alert(`Error: ${errorData.error || 'Failed to save assignment'}`);
       }
     } catch (error) {
       console.error("Error submitting form", error);
-      alert('Network error occurred. Please try again.');
+      //alert('Network error occurred. Please try again.');
     } finally {
         setSubmitting(false); // ✅ end submitting
     }

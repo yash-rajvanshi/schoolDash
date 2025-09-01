@@ -60,15 +60,15 @@ const AssignmentListPage = () => {
       });
 
       if (response.ok) {
-        alert("Assignment deleted successfully!");
+        // //alert("Assignment deleted successfully!");
         setAssignments((prev) => prev.filter((item) => item._id !== id));
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete assignment.");
+        // //alert(data.error || "Failed to delete assignment.");
       }
     } catch (error) {
       console.error("Error deleting assignment:", error);
-      alert("An error occurred while deleting the assignment.");
+      // //alert("An error occurred while deleting the assignment.");
     }
   };
 

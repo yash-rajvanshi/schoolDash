@@ -7,6 +7,7 @@ import Table from "@/components/Table";
 // import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
+import { PropagateLoader } from "react-spinners";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -84,15 +85,15 @@ const ClassListPage = () => {
       });
 
       if (response.ok) {
-        alert("Class deleted successfully!");
+        //alert("Class deleted successfully!");
         setClasss((prev) => prev.filter((item) => item._id !== id));
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete Class.");
+        //alert(data.error || "Failed to delete Class.");
       }
     } catch (error) {
       console.error("Error deleting Class:", error);
-      alert("An error occurred while deleting the Class.");
+      //alert("An error occurred while deleting the Class.");
     }
   };
 
@@ -175,7 +176,17 @@ const ClassListPage = () => {
 
       {/* List Table */}
       {loading ? (
-        <p className="mt-6">Loading classes...</p>
+        
+        <div className="flex items-center justify-center py-8">
+          <PropagateLoader
+            color="#6366f1" // Using a more visible color (indigo)
+            cssOverride={{}}
+            loading
+            size={10}
+            speedMultiplier={1}
+          />
+        </div>
+      
       ) : (
         <Table columns={columns} renderRow={renderRow} data={classes} />
       )}

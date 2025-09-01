@@ -80,7 +80,7 @@ const FormModal = ({ table, type, data, id, onSuccess, handleDelete }) => {
       const result = await response.json();
 
       if (response.ok) {
-        // alert(`${table} deleted successfully!`);
+        // //alert(`${table} deleted successfully!`);
         setOpen(false);
         // Call the provided handleDelete function if it exists
         if (handleDelete) {
@@ -91,11 +91,11 @@ const FormModal = ({ table, type, data, id, onSuccess, handleDelete }) => {
           onSuccess(id);
         }
       } else {
-        alert(result.error || "Failed to delete.");
+        //alert(result.error || "Failed to delete.");
       }
     } catch (error) {
       console.error("Delete error:", error);
-      alert("An error occurred during deletion.");
+      //alert("An error occurred during deletion.");
     }
   };
 

@@ -348,14 +348,14 @@ const TeacherForm = ({ type, data }) => {
         }
         if (type !== "update") reset();
         
-        alert("Teacher " + (type === "update" ? "updated" : "created") + " successfully!");
+        //alert("Teacher " + (type === "update" ? "updated" : "created") + " successfully!");
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.error || 'Failed to save teacher'}`);
+        //alert(`Error: ${errorData.error || 'Failed to save teacher'}`);
       }
     } catch (error) {
       console.error("Error submitting form", error);
-      alert("There was an error " + (type === "update" ? "updating" : "creating") + " the teacher. Please check the console for details.");
+      //alert("There was an error " + (type === "update" ? "updating" : "creating") + " the teacher. Please check the console for details.");
     } finally {
       setSubmitting(false);
     }

@@ -84,15 +84,15 @@ const TeacherListPage = () => {
       });
 
       if (response.ok) {
-        alert("Teacher created successfully!");
+        //alert("Teacher created successfully!");
         fetchTeachersFromApi(page, limit, setTeachers, setTotalPages, setLoading);
       } else {
         const errData = await response.json();
-        alert(errData.error || "Failed to create Teacher.");
+        //alert(errData.error || "Failed to create Teacher.");
       }
     } catch (error) {
       console.error("Error creating Teacher:", error);
-      alert("An error occurred while creating the Teacher.");
+      //alert("An error occurred while creating the Teacher.");
     }
   };
 

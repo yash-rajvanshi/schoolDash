@@ -241,14 +241,14 @@ const SubjectForm = ({ type, data, onSuccess }) => {
             onSuccess(savedSubject);
           }
           if (type !== "update") reset();
-          alert(`Subject ${type === "update" ? "updated" : "created"} successfully!`);
+          //alert(`Subject ${type === "update" ? "updated" : "created"} successfully!`);
         } else {
           const errorData = await response.json();
-          alert(`Error: ${errorData.error || 'Failed to save subject'}`);
+          //alert(`Error: ${errorData.error || 'Failed to save subject'}`);
         }
       } catch (error) {
         console.error("Error submitting form", error);
-        alert('Network error occurred. Please try again.');
+        //alert('Network error occurred. Please try again.');
       } finally {
         setSubmitting(false);
       }

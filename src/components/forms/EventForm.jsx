@@ -92,18 +92,21 @@ const EventForm = ({ type, data, onSuccess }) => {
         startTime: formatTime(values.startTime),
         endTime: formatTime(values.endTime),
       };
+      if (!payload.classId || payload.classId === "") {
+        delete payload.classId;
+      }
 
       console.log("Final Payload: ", payload);
 
       // Validate time format before sending
       const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
       if (!timeRegex.test(payload.startTime)) {
-        alert('Start time must be in HH:MM format (e.g., 14:30)');
+        //alert('Start time must be in HH:MM format (e.g., 14:30)');
         setSubmitting(false);
         return;
       }
       if (!timeRegex.test(payload.endTime)) {
-        alert('End time must be in HH:MM format (e.g., 15:30)');
+        //alert('End time must be in HH:MM format (e.g., 15:30)');
         setSubmitting(false);
         return;
       }
@@ -127,14 +130,14 @@ const EventForm = ({ type, data, onSuccess }) => {
           onSuccess(result);
         }
         if (type !== "update") reset();
-        alert(`Event ${type === "update" ? "updated" : "created"} successfully!`);
+        //alert(`Event ${type === "update" ? "updated" : "created"} successfully!`);
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.error || 'Failed to save event'}`);
+        //alert(`Error: ${errorData.error || 'Failed to save event'}`);
       }
     } catch (error) {
       console.error("Error submitting form", error);
-      alert('Network error occurred. Please try again.');
+      //alert('Network error occurred. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -148,7 +151,7 @@ const EventForm = ({ type, data, onSuccess }) => {
       <span className="text-xs text-gray-400 font-medium">
         Event Information
       </span>
-      
+
       <div className="flex flex-col gap-6">
         <InputField
           label="Title"
@@ -157,16 +160,15 @@ const EventForm = ({ type, data, onSuccess }) => {
           error={errors?.title}
           placeholder="Enter event title"
         />
-        
+
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-700">
             Description (Optional)
           </label>
           <textarea
             {...register("description")}
-            className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors?.description ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors?.description ? "border-red-500" : "border-gray-300"
+              }`}
             rows={3}
             placeholder="Enter event description (max 1000 characters)"
           />
@@ -216,9 +218,8 @@ const EventForm = ({ type, data, onSuccess }) => {
             </label>
             <select
               {...register("eventType")}
-              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors?.eventType ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors?.eventType ? "border-red-500" : "border-gray-300"
+                }`}
             >
               <option value="academic">Academic</option>
               <option value="sports">Sports</option>
@@ -265,8 +266,8 @@ const EventForm = ({ type, data, onSuccess }) => {
         {submitting
           ? "Submitting..."
           : type === "update"
-          ? "Update Event"
-          : "Create Event"}
+            ? "Update Event"
+            : "Create Event"}
       </button>
     </form>
   );

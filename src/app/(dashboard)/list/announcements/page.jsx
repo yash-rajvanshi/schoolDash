@@ -7,6 +7,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
+import { PropagateLoader } from "react-spinners";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -142,7 +143,17 @@ const AnnouncementListPage = () => {
 
       {/* List Table */}
       {loading ? (
-        <p className="mt-6">Loading announcements...</p>
+        
+        <div className="flex items-center justify-center py-8">
+          <PropagateLoader
+            color="#6366f1" // Using a more visible color (indigo)
+            cssOverride={{}}
+            loading
+            size={10}
+            speedMultiplier={1}
+          />
+        </div>
+      
       ) : (
         <Table columns={columns} renderRow={renderRow} data={announcements} />
       )}

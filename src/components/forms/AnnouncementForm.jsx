@@ -89,11 +89,11 @@ const AnnouncementForm = ({ type, data, onSuccess }) => {
       } else {
         const errorData = await response.json();
         console.error("Error response:", errorData);
-        alert(`Error: ${errorData.error || 'Failed to save announcement'}`);
+        //alert(`Error: ${errorData.error || 'Failed to save announcement'}`);
       }
     } catch (error) {
       console.error("Error submitting form", error);
-      alert('Network error occurred. Please try again.');
+      //alert('Network error occurred. Please try again.');
     } finally {
       setSubmitting(false);
     }

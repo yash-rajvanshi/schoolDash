@@ -7,6 +7,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
+import { PropagateLoader } from "react-spinners";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -93,15 +94,15 @@ const EventListPage = () => {
       });
 
       if (response.ok) {
-        alert("Event deleted successfully!");
+        //alert("Event deleted successfully!");
         setEvents((prev) => prev.filter((item) => item._id !== id));
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete Event.");
+        //alert(data.error || "Failed to delete Event.");
       }
     } catch (error) {
       console.error("Error deleting Event:", error);
-      alert("An error occurred while deleting the Event.");
+      //alert("An error occurred while deleting the Event.");
     }
   };
 
@@ -222,7 +223,17 @@ const EventListPage = () => {
 
       {/* List Table */}
       {loading ? (
-        <p className="mt-6">Loading events...</p>
+        
+        <div className="flex items-center justify-center py-8">
+          <PropagateLoader
+            color="#6366f1" // Using a more visible color (indigo)
+            cssOverride={{}}
+            loading
+            size={10}
+            speedMultiplier={1}
+          />
+        </div>
+      
       ) : (
         <Table columns={columns} renderRow={renderRow} data={events} />
       )}

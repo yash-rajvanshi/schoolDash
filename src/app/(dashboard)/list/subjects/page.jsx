@@ -7,6 +7,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { useAuth } from '@/app/hooks/useAuthHook';
+import { PropagateLoader, PulseLoader } from "react-spinners";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -88,11 +89,11 @@ const SubjectListPage = () => {
         setSubjects((prev) => prev.filter((item) => item._id !== id));
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete Subject.");
+        //alert(data.error || "Failed to delete Subject.");
       }
     } catch (error) {
       console.error("Error deleting Subject:", error);
-      // alert("An error occurred while deleting the Subject.");
+      // //alert("An error occurred while deleting the Subject.");
     }
   };
 
@@ -122,7 +123,17 @@ const SubjectListPage = () => {
     <tr key={item._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="p-4">{item.name}</td>
       <td className="hidden md:table-cell">
-        {teachersLoading ? "Loading..." : getTeacherNames(item.teachers || [])}
+        {teachersLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <PropagateLoader
+            color="#6366f1" // Using a more visible color (indigo)
+            cssOverride={{}}
+            loading
+            size={10}
+            speedMultiplier={1}
+          />
+        </div>
+      ) : getTeacherNames(item.teachers || [])}
       </td>
       <td>
         <div className="flex items-center gap-2">
@@ -138,7 +149,14 @@ const SubjectListPage = () => {
   );
 
   if (authLoading) {
-    return <p className="text-center mt-10">Loading...</p>;
+    return <PulseLoader
+  color="#6366f1"
+  cssOverride={{}}
+  loading
+  margin={4}
+  size={10}
+  speedMultiplier={1}
+/>;
   }
 
   if (user?.role !== 'admin' && user?.role !== 'teacher' && user?.role !== 'student') {
@@ -163,7 +181,17 @@ const SubjectListPage = () => {
 
       {/* List Table */}
       {loading ? (
-        <p className="mt-6">Loading subjects...</p>
+        
+        <div className="flex items-center justify-center py-8">
+          <PropagateLoader
+            color="#6366f1" // Using a more visible color (indigo)
+            cssOverride={{}}
+            loading
+            size={10}
+            speedMultiplier={1}
+          />
+        </div>
+      
       ) : (
         <Table columns={columns} renderRow={renderRow} data={subjects} />
       )}
