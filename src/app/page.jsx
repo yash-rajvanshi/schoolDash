@@ -9,7 +9,6 @@ import { motion } from 'framer-motion';
 import { PropagateLoader } from 'react-spinners';
 
 export default function LoginPage() {
-  // Move ALL hooks to the top
   const { loading: authLoading, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +21,6 @@ export default function LoginPage() {
   // Effect to handle already logged-in users
   useEffect(() => {
     if (!authLoading && user?.role) {
-      // Redirect based on role if user is already logged in
       const role = user.role;
       if (role === 'admin') {
         router.push('/admin');
@@ -63,7 +61,6 @@ export default function LoginPage() {
     }
   };
 
-  // Show loading while checking authentication status
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
