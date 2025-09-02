@@ -51,16 +51,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 ring "
-      style={{
-        backgroundImage: 'url(/back.jpeg)', 
-        backgroundSize: 'cover', // or 'contain' 
-        backgroundPosition: 'center', // or any position
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed', // optional - makes the background fixed during scroll
-      }}
-    >
+    <motion.div
+  className="min-h-screen flex items-center justify-center px-4"
+  style={{
+    backgroundImage: 'url(/back.jpeg)', // Replace with your image path
+    backgroundSize: 'cover', // or 'contain' depending on your needs
+    backgroundPosition: 'center', // or any position you prefer
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed', // optional - makes the background fixed during scroll
+  }}
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 1 }}
+>
       <motion.div
         className="relative backdrop-blur-xl bg-white/40 shadow-2xl rounded-3xl p-10 w-full max-w-md "
         initial={{ y: 50, opacity: 0 }}
@@ -89,18 +92,18 @@ export default function LoginPage() {
         </motion.h2>
 
         <div className='flex items-center justify-center'>
-          {errorMsg && (
-            <motion.div
-              className="mb-4 text-center text-red-500 text-sm  bg-lamaYellow w-fit py-2 px-3 rounded-full"
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-            >
-              {errorMsg}
-            </motion.div>
-          )}
+        {errorMsg && (
+          <motion.div
+            className="mb-4 text-center text-red-500 text-sm  bg-lamaYellow w-fit py-2 px-3 rounded-full"
+            initial={{ y: -10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+          >
+            {errorMsg}
+          </motion.div>
+        )}
         </div>
 
-
+        
 
         <form onSubmit={handleSubmit}>
           <motion.div
@@ -213,16 +216,16 @@ export default function LoginPage() {
               style={{ minHeight: isLoading ? "46px" : "" }}
             >
               {isLoading ? (
-
+                
 
                 <div className="flex items-center justify-center">
-                  <PropagateLoader
-                    color="#fff"
-                    cssOverride={{}}
-                    loading
-                    size={7}
-                    speedMultiplier={1}
-                  />
+                <PropagateLoader
+                color="#fff"
+                cssOverride={{}}
+                loading
+                size={7}
+                speedMultiplier={1}
+              />
                 </div>
               ) : (
                 "Sign In"
@@ -231,6 +234,6 @@ export default function LoginPage() {
           </div>
         </form>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

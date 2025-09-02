@@ -120,7 +120,7 @@ const TeacherListPage = () => {
         <Image
           src={teacher.photo || "/avatar.png"} alt="Teacher Photo" width={40} height={40} className="md:hidden xl:block w-10 h-10 rounded-full object-cover" />
         <div className="flex flex-col">
-          <h3 className="font-semibold">{teacher.firstName}</h3>
+          <h3 className="font-semibold">{teacher.firstName} {teacher.lastName}</h3>
           <span className="text-gray-500 text-xs">
             {getSubjectName(teacher.subjects)}
           </span>

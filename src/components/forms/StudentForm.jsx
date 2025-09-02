@@ -44,13 +44,13 @@ const schema = z.object({
   // photo: z.string().url({ message: "Image URL is required after upload!" }).optional(),
   class: z.string().min(1, { message: "Class is required!" }),
   grade: z.coerce.number().int().nonnegative().min(1, { message: "Grade is required!" }),
-  gradeId: z.string().min(1, { message: "Grade is required!" }),
-  classId: z.string().min(1, { message: "Combined class ID is required!" }),
   results: z.array(z.string()).optional(),
 });
 
 const StudentForm = ({ type, data, onSuccess }) => {
   const [uploading, setUploading] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [classesLoading, setClassesLoading] = useState(true);
   const {
     register,
     handleSubmit,
@@ -66,7 +66,7 @@ const StudentForm = ({ type, data, onSuccess }) => {
       results: data?.results || [],
     },
   });
-  console.log(data);
+  console.log(data, errors);
   const selectedClass = watch("class");
   const selectedGrade = watch("gradeId");
 
@@ -77,6 +77,33 @@ const StudentForm = ({ type, data, onSuccess }) => {
       setValue("studentId", generatedId);
     }
   }, [type, data?.studentId, setValue]);
+
+  // Fetch classes on mount
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        setClassesLoading(true);
+        const res = await fetch(`${API_BASE_URL}/api/class`);
+        const json = await res.json();
+        console.log("Fetched Classes:", json);
+        setClasses(json.classes || []);
+      } catch (error) {
+        console.error("Error fetching classes", error);
+        setClasses([]);
+      } finally {
+        setClassesLoading(false);
+      }
+    };
+    fetchClasses();
+  }, []);
+
+  // Auto-fill grade based on first character of selected class
+  useEffect(() => {
+    if (selectedClass && /^\d/.test(selectedClass)) {
+      const firstDigit = selectedClass[0];
+      setValue("grade", parseInt(firstDigit), { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    }
+  }, [selectedClass, setValue]);
 
   const handleClassChange = (e) => {
     const value = e.target.value;
@@ -100,9 +127,9 @@ const StudentForm = ({ type, data, onSuccess }) => {
       const payload = {
         ...values,
         studentId: values.studentId || Math.floor(Math.random() * 1000000),
-        grade: values.class || values.grade,
-        class: values.classId || values.class, // 👈 override 'class' with 'classId'
         password: values.email + values.username,
+        gradeId: values.gradeId || values.grade,
+        classId: values.classId || values.class,
       };
   
       console.log("Final Payload: ", payload);
@@ -218,10 +245,15 @@ const StudentForm = ({ type, data, onSuccess }) => {
                 onChange={handleClassChange}
                 defaultValue={data?.class || ""}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                disabled={classesLoading}
               >
-                <option value="">Select Class</option>
-                {[1, 2, 3, 4, 5, 6].map((num) => (
-                  <option key={num} value={num}>Class {num}</option>
+                <option value="">
+                  {classesLoading ? "Loading classes..." : "Select Class"}
+                </option>
+                {classes.map((classItem) => (
+                  <option key={classItem._id} value={classItem.name}>
+                    {classItem.name}
+                  </option>
                 ))}
               </select>
               {errors.class?.message && (
@@ -231,22 +263,19 @@ const StudentForm = ({ type, data, onSuccess }) => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Grade</label>
-              <select
+              <input
                 {...register("grade")}
                 defaultValue={data?.grade || ""}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              >
-                <option value="">Select Grade</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((grade) => (
-                  <option key={grade} value={grade}>Grade {grade}</option>
-                ))}
-              </select>
+                readOnly
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                placeholder="Auto-generated from class"
+              />
               {errors.grade?.message && (
                 <p className="text-sm text-red-600">{errors.grade.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Section</label>
               <select
                 {...register("gradeId")}
@@ -262,7 +291,7 @@ const StudentForm = ({ type, data, onSuccess }) => {
               {errors.gradeId?.message && (
                 <p className="text-sm text-red-600">{errors.gradeId.message}</p>
               )}
-            </div>
+            </div> */}
           </div>
           <input type="hidden" {...register("classId")} />
         </div>

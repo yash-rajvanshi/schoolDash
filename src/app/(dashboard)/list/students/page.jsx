@@ -118,7 +118,7 @@ const StudentlistPage = () => {
           className="md:hidden xl:block w-10 h-10 rounded-full object-cover" 
         />
         <div className="flex flex-col">
-          <h3 className="font-semibold">{student.firstName}</h3>
+          <h3 className="font-semibold">{student.firstName} {student.lastName}</h3>
           <span className="text-gray-500 text-xs">{student.class}</span>
         </div>
       </td>

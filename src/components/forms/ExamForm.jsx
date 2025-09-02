@@ -16,8 +16,8 @@ const schema = z.object({
   teacherId: z.string().min(1, { message: "Teacher is required!" }),
   date: z.string().min(1, { message: "Exam Date is required!" }),
   startTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: "Please enter a valid time in HH:MM format" }),
-  duration: z.number().min(15, { message: "Duration must be at least 15 minutes" }).max(300, { message: "Duration cannot exceed 300 minutes" }),
-  maxScore: z.number().min(1, { message: "Max score must be at least 1" }).max(1000, { message: "Max score cannot exceed 1000" }),
+  duration: z.coerce.number().int().min(15, { message: "Duration must be at least 15 minutes" }).max(300, { message: "Duration cannot exceed 300 minutes" }),
+  maxScore: z.coerce.number().int().min(1, { message: "Max score must be at least 1" }).max(1000, { message: "Max score cannot exceed 1000" }),
   description: z.string().max(500, { message: "Description cannot exceed 500 characters" }).optional(),
 });
 

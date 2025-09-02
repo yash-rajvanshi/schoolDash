@@ -43,7 +43,6 @@ function AdminPage() {
       {/* RIGHT – scrolls independently */}
       <div className="w-full lg:w-1/3 h-screen overflow-y-auto sticky top-0 pr-2 flex flex-col gap-8">
         <EventCalendar />
-        
       </div>
     </div>
   );

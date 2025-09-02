@@ -48,6 +48,10 @@ const columns = [
     className: "hidden md:table-cell",
   },
   {
+    header: "Time",
+    accessor: "startTime",
+  },
+  {
     header: "Actions",
     accessor: "action",
   },
@@ -138,6 +142,7 @@ const ExamListPage = () => {
           : 'N/A'}
       </td>
       <td className="hidden md:table-cell">{formatDate(item.date)}</td>
+      <td className="hidden lg:table-cell">{item.startTime || 'N/A'}</td>
       <td>
         <div className="flex items-center gap-2">
           {(role === "admin" || role === "teacher" ) && (
