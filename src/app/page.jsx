@@ -3,24 +3,37 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '@/app/lib/api';
+import { useAuth } from '@/app/hooks/useAuthHook'; // Import useAuth hook
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { PropagateLoader } from 'react-spinners';
 
 export default function LoginPage() {
+  // Move ALL hooks to the top
+  const { loading: authLoading, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const [bgPosition, setBgPosition] = useState(0);
 
+
+  // Effect to handle already logged-in users
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBgPosition((prev) => (prev + 1) % 100);
-    }, 100); // Adjust speed here
-    return () => clearInterval(interval);
-  }, []);
+    if (!authLoading && user?.role) {
+      // Redirect based on role if user is already logged in
+      const role = user.role;
+      if (role === 'admin') {
+        router.push('/admin');
+      } else if (role === 'teacher') {
+        router.push('/teacher');
+      } else if (role === 'student') {
+        router.push('/student');
+      }
+    
+    }
+  }, [authLoading, user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,6 +63,21 @@ export default function LoginPage() {
     }
   };
 
+  // Show loading while checking authentication status
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <PropagateLoader
+          color="#6366f1"
+          loading
+          size={10}
+          speedMultiplier={1}
+        />
+      </div>
+    );
+  }
+
+  // Only render login form if user is not already logged in
   return (
     <motion.div
   className="min-h-screen flex items-center justify-center px-4"
@@ -129,13 +157,31 @@ export default function LoginPage() {
             transition={{ delay: 0.7 }}
           >
             <label className="block text-gray-600 text-sm mb-2">Password</label>
-            <input
-              type="password"
-              value={password}
-              required
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                required
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                {showPassword ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.5 6.5m3.378 3.378a3 3 0 013.545 3.545m.05.05l-4.242-4.242m0 0L6.5 6.5m12 12L15.75 15.75" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </motion.div>
 
           <div className="relative">
