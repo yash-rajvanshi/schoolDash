@@ -109,7 +109,7 @@ const AnnouncementsT = () => {
     <div className="bg-white p-4 rounded-md">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Announcements</h1>
-        <Link href='/list/announcements' className='text-xs text-gray-400'>View All</Link>
+        <Link href='/list/announcements' className='text-xs text-gray-400 '>View All</Link>
       </div>
       <div className="flex flex-col gap-4 mt-4">
         {announcements.length === 0 ? (
@@ -125,9 +125,6 @@ const AnnouncementsT = () => {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <h2 className="font-medium">{announcement.title}</h2>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityBadge(announcement.priority)}`}>
-                    {announcement.priority}
-                  </span>
                 </div>
                 <span className="text-xs text-gray-500 bg-white rounded-md px-1 py-1">
                   {formatDate(announcement.date)}
@@ -136,7 +133,8 @@ const AnnouncementsT = () => {
               <p className="text-sm text-gray-600 mb-2">
                 {announcement.content}
               </p>
-              {announcement.classes && announcement.classes.length > 0 && (
+              <div className='flex justify-between'>
+                {announcement.classes && announcement.classes.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {announcement.classes.map((className, index) => (
                     <span 
@@ -145,9 +143,16 @@ const AnnouncementsT = () => {
                     >
                       {className+" "}
                     </span>
+                    
                   ))}
                 </div>
               )}
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityBadge(announcement.priority)}`}>
+                    {announcement.priority}
+              </span>
+
+              </div>
+              
             </Link>
           ))
         )}
