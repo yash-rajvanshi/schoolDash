@@ -84,9 +84,13 @@ const EventCalendar = () => {
                 {event.description || 'No description available'}
               </p>
               {event.location && (
-                <p className="mt-2 text-xs text-gray-500">
-                  📍 {event.location}
+                <span>
+                  <p className="mt-2 text-xs text-gray-500 bg-blue-100 ring-1 ring-blue-700 w-fit px-2 py-1 rounded-full font-medium">
+                  Venue: {event.location}
                 </p>
+
+                </span>
+                
               )}
             </div>
           ))

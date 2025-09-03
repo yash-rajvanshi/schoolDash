@@ -29,7 +29,7 @@ const AnnouncementsT = () => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-100 border-l-4 border-red-500';
+        return 'bg-red-100 border-l-4 border-red-500  ';
       case 'high':
         return 'bg-orange-100 border-l-4 border-orange-500';
       case 'medium':
@@ -44,15 +44,15 @@ const AnnouncementsT = () => {
   const getPriorityBadge = (priority) => {
     switch (priority) {
       case 'urgent':
-        return 'text-red-700 bg-red-100';
+        return 'text-red-700 bg-red-100 ring-1 ring-red-700';
       case 'high':
-        return 'text-orange-700 bg-orange-100';
+        return 'text-orange-700 bg-orange-100 ring-1 ring-orange-700';
       case 'medium':
-        return 'text-blue-700 bg-blue-100';
+        return 'text-blue-700 bg-blue-100 ring-1 ring-blue-700';
       case 'low':
-        return 'text-gray-700 bg-gray-100';
+        return 'text-gray-700 bg-gray-100 ring-1 ring-gray-700';
       default:
-        return 'text-blue-700 bg-blue-100';
+        return 'text-blue-700 bg-blue-100 ring-1 ring-blue-700';
     }
   };
 

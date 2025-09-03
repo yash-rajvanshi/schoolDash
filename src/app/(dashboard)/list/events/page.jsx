@@ -183,7 +183,7 @@ const EventListPage = () => {
     <tr key={item._id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="p-4">{item.title}</td>
       <td className="hidden lg:table-cell max-w-xs truncate" title={item.description}>
-        {item.description || "No description"}
+        {item.description.split(" ").slice(0, 5).join(" ")+ "..." || "No description"}
       </td>
       <td className="hidden md:table-cell">{formatDate(item.date)}</td>
       <td className="hidden md:table-cell">{formatTime(item.startTime)}</td>
@@ -201,7 +201,7 @@ const EventListPage = () => {
       <td className="hidden xl:table-cell max-w-xs truncate" title={item.location}>
         {item.location || "No location"}
       </td>
-      <td className="hidden lg:table-cell">
+      <td className="hidden lg:table-cell all">
         {item.classId ? item.classId.name : "None"}
       </td>
       <td>

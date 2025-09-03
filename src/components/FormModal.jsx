@@ -50,13 +50,13 @@ const forms = {
 };
 
 const FormModal = ({ table, type, data, id, onSuccess, handleDelete }) => {
-  const size = type === "create" ? "w-8 h-8 md:w-10 md:h-10" : "w-7 h-7 md:w-9 md:h-9";
+  const size = type === "create" ? "w-7 h-7 md:w-10 md:h-10" : "w-7 h-7 md:w-8 md:h-8";
   const bgColor =
     type === "create"
-      ? "bg-lamaYellow"
+      ? "bg-[#40cf64]"
       : type === "update"
-      ? "bg-lamaSky"
-      : "bg-lamaPurple";
+      ? "bg-[#fbc75b]"
+      : "bg-[#fc6e68]";
 
   const [open, setOpen] = useState(false);
   

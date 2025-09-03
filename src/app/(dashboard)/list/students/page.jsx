@@ -129,7 +129,7 @@ const StudentlistPage = () => {
       <td>
         <div className="flex items-center gap-2">
           <Link href={`/list/students/${student._id}`}>
-            <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
+            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-[#40cf64]">
               <Image src="/view.png" alt="View" width={16} height={16} className="rounded-full" />
             </button>
           </Link>
