@@ -106,7 +106,7 @@ const AnnouncementsT = () => {
   }
 
   return (
-    <div className="bg-white p-4 rounded-md">
+    <div className="bg-white p-[0.8rem] rounded-md">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Announcements</h1>
         <Link href='/list/announcements' className='text-xs text-gray-400 '>View All</Link>
