@@ -76,7 +76,7 @@ const EventCalendar = () => {
             >
               <div className="flex items-center justify-between">
                 <h1 className="font-semibold text-gray-600">{event.title}</h1>
-                <span className=" text-xs text-gray-500 bg-gray-200 rounded-md px-1 py-1">
+                <span className="z-20 text-xs text-gray-500 bg-gray-200 rounded-md px-1 py-1">
                   {formatTime(event.startTime)} - {formatTime(event.endTime)}
                 </span>
               </div>

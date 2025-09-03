@@ -147,7 +147,7 @@ const AnnouncementsT = () => {
                   ))}
                 </div>
               )}
-              <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityBadge(announcement.priority)}`}>
+              <span className={`text-xs px-2 py-1 rounded-full font-medium z-20 ${getPriorityBadge(announcement.priority)}`}>
                     {announcement.priority}
               </span>
 

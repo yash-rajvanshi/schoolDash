@@ -34,10 +34,6 @@ function AdminPage() {
             <Announcements />
           </div>
         </div>
-
-        {/* BOTTOM CHART */}
-        <div className="w-full h-[500px]">
-        </div>
       </div>
 
       {/* RIGHT – scrolls independently */}
